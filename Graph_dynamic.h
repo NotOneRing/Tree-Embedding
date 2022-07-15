@@ -1,5 +1,5 @@
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef GRAPH_DYNAMIC_H
+#define GRAPH_DYNAMIC_H
 
 #define SetBit(A, k)     ( A[(k/32)] |= (1 << (k%32)) )
 #define ClearBit(A, k)   ( A[(k/32)] &= ~(1 << (k%32)) )
@@ -121,8 +121,7 @@ public:
     clock_t t1 = clock();
     ifstream infile(filename.c_str());
 
-    //read graph and get degree info
-    // vector<pair<int, int>> edge_vec;
+
     int from;
     int to;
     while (infile.good()) {
@@ -139,8 +138,7 @@ public:
     for (auto it = edge_vec.begin(); it < edge_vec.end(); it++) {
       from = it->first;
       to = it->second;
-      // degree[from]++;
-      // degree[to]++;
+
       outdegree[from]++;
       indegree[to]++;
     }
@@ -149,77 +147,66 @@ public:
     for (int i = 0; i < n; i++) {
       //inAdjList
       if(indegree[i] == 0){
-        // cout<<"Branch 1 !"<<endl;
-        // continue;
+
         if(inAdjList[i] == NULL){
           inAdjList[i] = new int[indegree[i]];
         }
       }
       else{
         if(inAdjList[i] == NULL){
-          // cout<<"Branch 2 !"<<endl;
+
           inAdjList[i] = new int[indegree[i]];
-          // cout<<"AdjList["<<i<<"]"<<endl;
+
           }
         else{
             if(indegree[i] == former_indegree[i]){
             }
             else{
               assert(indegree[i] > former_indegree[i]); 
-              // cout<<"Branch 3 !"<<endl;
+
               BiggerInAdjList[i] = new int[indegree[i]];
-              // cout<<"BiggerAdjList["<<i<<"]"<<endl;
+
               memcpy(BiggerInAdjList[i], inAdjList[i], sizeof(int) * former_indegree[i]);
-              // cout<<"memcpy["<<i<<"]"<<endl;
+
               delete inAdjList[i];
               inAdjList[i] = NULL;
-              // cout<<"delete ["<<i<<"]"<<endl;
+
               inAdjList[i] = BiggerInAdjList[i];
-              // cout<<"AdjList[i] = BiggerAdjList[i];"<<endl;
+
             }
           }
       }
 
       //outAdjList
       if(outdegree[i] == 0){
-        // cout<<"Branch 1 !"<<endl;
-        // continue;
+
         if(outAdjList[i] == NULL){
           outAdjList[i] = new int[outdegree[i]];
         }
       }
       else{
         if(outAdjList[i] == NULL){
-          // cout<<"Branch 2 !"<<endl;
+
           outAdjList[i] = new int[outdegree[i]];
-          // cout<<"AdjList["<<i<<"]"<<endl;
+
         }
         else{
             if(outdegree[i] == former_outdegree[i]){
               continue;
             }
             else{
-              // cout<<"Branch 3 !"<<endl;
+
               BiggerOutAdjList[i] = new int[outdegree[i]];
-              // cout<<"BiggerAdjList["<<i<<"]"<<endl;
-              // cout<<"i = "<<i<<endl;
-              // cout<<"former_outdegree[i] = "<<former_outdegree[i]<<endl;
-              // cout<<"outdegree[i] = "<<outdegree[i]<<endl;
+
               assert(outdegree[i] > former_outdegree[i]);
 
               memcpy(BiggerOutAdjList[i], outAdjList[i], sizeof(int) * former_outdegree[i]);
-              // cout<<"memcpy["<<i<<"]"<<endl;
-              // for(int j = 0; j < outdegree[i]; j++){
-              //   cout<<outAdjList[i][j]<<" ";
-              // }
-              // cout<<endl;
 
               delete outAdjList[i];
               outAdjList[i] = NULL;
 
-              // cout<<"delete ["<<i<<"]"<<endl;
               outAdjList[i] = BiggerOutAdjList[i];
-              // cout<<"AdjList[i] = BiggerAdjList[i];"<<endl;
+
             }
         }
       }
@@ -231,26 +218,15 @@ public:
 
     for (auto it = edge_vec.begin(); it < edge_vec.end(); it++) {
       from = it->first;
-      // cout<<"1"<<endl;
+
       to = it->second;
-      // cout<<"2"<<endl;
-      // cout<<"from = "<<from<<endl;
-      // cout<<"pointer_out[from] = "<<pointer_out[from]<<endl;
-      // cout<<outAdjList[from][pointer_out[from]]<<endl;
+
       outAdjList[from][pointer_out[from]] = to;
-      // cout<<"3"<<endl;
+
       pointer_out[from]++;
-      // cout<<"4"<<endl;
-      // if(to >= vertex_number){
-      //   cout<<"to = "<<to<<endl;
-      //   cout<<"vertex_number = "<<vertex_number<<endl;
-      // }
-      // if(pointer_in[to] >= indegree[to]){
-      //   cout<<"pointer_in[to]"<<pointer_in[to]<<endl;
-      //   cout<<"indegree[to] = "<<indegree[to]<<endl;
-      // }
+
       inAdjList[to][pointer_in[to]] = from;
-      // cout<<"5"<<endl;
+
       pointer_in[to]++;
       m++;
     }
@@ -267,28 +243,14 @@ public:
 
 
 
-
-
-
-
-
-
-  // void SubsetRandomSplitGraph(string inFilename, string subset_infilename, 
-  //     string outFilename_test, string outFilename_train, double percent) {
   void SubsetRandomSplitGraphWithTrainOutput(vector<pair<int, int>>& edge_vec, string snapshot_outFilename_train, double percent) {
     clock_t t1 = clock();
 
     // snapshot_edge_number
     int m1 = edge_vec.size();
 
-    // ifstream infile(inFilename.c_str());
 
-    // ofstream outfile_test(outFilename_test.c_str());
     ofstream outfile_train(snapshot_outFilename_train.c_str());
-    // int n1;
-    // infile >> n1;
-    // outfile_test << n1 << endl;
-    // outfile_train << n1 << endl;
 
 
 
@@ -296,7 +258,6 @@ public:
     for (int i = 0; i < m2; i++) {
       int r = rand() % (m1 - i);
       iter_swap(edge_vec.begin() + i, edge_vec.begin() + i + r);
-      // outfile_test << edge_vec[i].first << " " << edge_vec[i].second << endl;
     }
 
     
@@ -307,12 +268,7 @@ public:
 
 
 
-
-
-
-  // void SubsetNegativeSamples(string outFilename, double percent) {
   void SubsetNegativeSamples(string outFilename, int total_sample_number, unordered_set<int> &subset_nodes_set) {
-    // int total_sample_number = percent * m;
 
     ofstream outfile(outFilename.c_str());
 
@@ -444,7 +400,6 @@ public:
   }
 
   
-  // g.RandomSplitGraph(dataset, ptestdataset, traindataset, percent);
   void RandomSplitGraph(string inFilename, string outFilename1, string outFilename2, double percent) {
     clock_t t1 = clock();
     int m1 = 0;
@@ -586,7 +541,6 @@ public:
       edge_vec.push_back(make_pair(from, to));
     }
 
-    // former_degree = new int[n];
     for (int i = 0; i < n; i++) {
       former_degree[i] = degree[i];
     }
@@ -602,33 +556,29 @@ public:
     cout << "..." << endl;
     for (int i = 0; i < n; i++) {
       if(degree[i] == 0){
-        // cout<<"Branch 1 !"<<endl;
-        // continue;
+
           AdjList[i] = new int[degree[i]];
       }
       else{
         if(AdjList[i] == NULL){
-          // cout<<"Branch 2 !"<<endl;
+
           AdjList[i] = new int[degree[i]];
-          // cout<<"AdjList["<<i<<"]"<<endl;
+
         }
         else if(degree[i] == former_degree[i]){
-          //pass;
         }
         else{
-          // cout<<"Branch 3 !"<<endl;
           BiggerAdjList[i] = new int[degree[i]];
-          // cout<<"BiggerAdjList["<<i<<"]"<<endl;
 
           assert(degree[i] > former_degree[i]);
 
           memcpy(BiggerAdjList[i], AdjList[i], sizeof(int) * former_degree[i]);
-          // cout<<"memcpy["<<i<<"]"<<endl;
+
           delete AdjList[i];
           AdjList[i] = NULL;
-          // cout<<"delete ["<<i<<"]"<<endl;
+
           AdjList[i] = BiggerAdjList[i];
-          // cout<<"AdjList[i] = BiggerAdjList[i];"<<endl;
+
           }
       }
     }
@@ -641,8 +591,7 @@ public:
     for (auto it = edge_vec.begin(); it < edge_vec.end(); it++) {
       from = it->first;
       to = it->second;
-      // cout<<"from = "<<from<<endl;
-      // cout<<"to = "<<to<<endl;
+      
       AdjList[from][pointer_out[from]] = to;
       pointer_out[from]++;
       AdjList[to][pointer_out[to]] = from;
@@ -716,17 +665,9 @@ public:
   void SubsetRandomSplitGraphWithTrainOutput(vector<pair<int, int>>& edge_vec, string snapshot_outFilename_train, double percent) {
     clock_t t1 = clock();
 
-    // snapshot_edge_number
     int m1 = edge_vec.size();
 
-    // ifstream infile(inFilename.c_str());
-
-    // ofstream outfile_test(outFilename_test.c_str());
     ofstream outfile_train(snapshot_outFilename_train.c_str());
-    // int n1;
-    // infile >> n1;
-    // outfile_test << n1 << endl;
-    // outfile_train << n1 << endl;
 
 
 
@@ -746,7 +687,6 @@ public:
 
 
   void SubsetNegativeSamples(string outFilename, int total_sample_number, unordered_set<int> &subset_nodes_set) {
-    // int total_sample_number = percent * m;
 
     cout<<"SubsetNegativeSamples: n = "<<n<<endl;
 
@@ -758,8 +698,6 @@ public:
         adjM[i].insert(AdjList[i][j]);
       }
     }
-
-    // outfile << n << endl;
     
     int npair = 0;
     int nsample = 0;
@@ -773,7 +711,7 @@ public:
     }
 
     while (nsample < total_sample_number) {
-      // int i = rand() % n;
+
       int i = rand() % subset_number;
       i = subset_nodes_vec[i];
 
@@ -825,10 +763,7 @@ public:
 
     for(int i = 0; i < snapshots_number; i++){
       ofstream outfile( (outFilename1 +"_" + to_string(i) + ".txt").c_str() );
-      // outfile << n1 << endl;
 
-      //read graph and get degree info
-      // int m2 = percent * m1;
 
       if(i != snapshots_number - 1){
         start = i * common_group_size;
@@ -949,67 +884,6 @@ public:
 
 };
 
-
-class Node_Set {
-public:
-  int vert;
-  int bit_vert;
-  int *HashKey;
-  int *HashValue;
-  int KeyNumber;
-
-
-  Node_Set(int n) {
-    vert = n;
-    bit_vert = n / 32 + 1;
-    HashKey = new int[vert];
-    HashValue = new int[bit_vert];
-    for (int i = 0; i < vert; i++) {
-      HashKey[i] = 0;
-    }
-    for (int i = 0; i < bit_vert; i++) {
-      HashValue[i] = 0;
-    }
-    KeyNumber = 0;
-  }
-
-
-  void Push(int node) {
-
-    if (!TestBit(HashValue, node)) {
-      HashKey[KeyNumber] = node;
-      KeyNumber++;
-    }
-    SetBit(HashValue, node);
-  }
-
-
-  int Pop() {
-    if (KeyNumber == 0) {
-      return -1;
-    } else {
-      int k = HashKey[KeyNumber - 1];
-      ClearBit(HashValue, k);
-      KeyNumber--;
-      return k;
-    }
-  }
-
-  void Clean() {
-    for (int i = 0; i < KeyNumber; i++) {
-      ClearBit(HashValue, HashKey[i]);
-      HashKey[i] = 0;
-    }
-    KeyNumber = 0;
-  }
-
-  ~Node_Set() {
-    delete[] HashKey;
-    delete[] HashValue;
-    HashKey = NULL;
-    HashValue = NULL;
-  }
-};
 
 
 #endif

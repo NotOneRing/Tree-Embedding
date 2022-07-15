@@ -82,165 +82,6 @@ const static IOFormat CSVFormat(StreamPrecision, DontAlignCols, ", ", "\n");
 
 
 
-// //FrPCA
-// void sparse_sub_svd_function(int d, int pass, 
-// int update_j, Eigen::SparseMatrix<double, 0, int> &submatrix, 
-// mat* matrix_vec_t,
-// vector<int>& record_submatrices_nnz
-// ){
-
-//   auto sub_svd_start_time = chrono::system_clock::now();
-
-//   SparseMatrix<double, RowMajor, int> ppr_matrix_temp(submatrix.rows(), submatrix.cols());
-
-//   ppr_matrix_temp = submatrix;
-
-//   // int nnz = ppr_matrix_temp.nonZeros();
-//   long nnz = record_submatrices_nnz[update_j];
-
-//   assert(nnz < INT_MAX);
-
-//   // cout<<"update_j = "<<update_j<<", nnz = "<<nnz<<endl;
-
-//   // if(update_j == 170){
-//   //   cout<<"submatrix.rows() = "<<submatrix.rows()<<endl;
-//   //   cout<<"submatrix.cols() = "<<submatrix.cols()<<endl;
-//   // }
-
-
-//   auto hash_coo_time = chrono::system_clock::now();
-
-//   mat_coo *ppr_matrix_coo = coo_matrix_new(submatrix.rows(), submatrix.cols(), nnz);
-//   ppr_matrix_coo->nnz = nnz;
-
-//   long nnz_iter=0;
-//   double ppr_norm =0;
-
-
-//   // if(update_j == 170){
-//   //   cout<<"update_j = "<<164<<endl;
-
-//   //   cout<<"nnz = "<<nnz<<endl;
-
-//   //   for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-//   //     for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-
-//   //         cout<<"it.row() = "<<it.row()<<"it.col() = "<<it.col()<<"it.value() = "<<it.value()<<endl;
-
-//   //     }
-//   //   }
-
-//   // }
-
-//   // if(update_j == 170){
-//   //   cout<<1<<endl;
-//   // }
-
-
-//   for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-
-//     for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-//       double value1 = it.value();
-//       // if(value1 == 0){
-//       //   //pass
-//       // }
-//       // else{
-//         ppr_matrix_coo->rows[nnz_iter] = it.row() + 1;
-//         ppr_matrix_coo->cols[nnz_iter] = it.col() + 1;
-//         ppr_matrix_coo->values[nnz_iter] = value1;
-//         ppr_norm += ppr_matrix_coo->values[nnz_iter]*ppr_matrix_coo->values[nnz_iter];
-//         nnz_iter ++;
-//       // }
-//     }
-//   }
-
-//   // if(update_j == 170){
-//   //   cout<<2<<endl;
-//   // }
-
-//   ppr_matrix_temp.resize(0,0);
-
-//   // if(update_j == 170){
-//   //   cout<<3<<endl;
-//   // }
-
-//   ppr_matrix_temp.data().squeeze();
-
-//   // if(update_j == 170){
-//   //   cout<<4<<endl;
-//   // }
-
-//   mat_csr* ppr_matrix = csr_matrix_new();
-
-//   // if(update_j == 170){
-//   //   cout<<5<<endl;
-//   // }
-
-//   csr_init_from_coo(ppr_matrix, ppr_matrix_coo);
-
-//   // if(update_j == 170){
-//   //   cout<<6<<endl;
-//   // }
-
-//   coo_matrix_delete(ppr_matrix_coo);
-
-//   // if(update_j == 170){
-//   //   cout<<7<<endl;
-//   // }
-  
-//   ppr_matrix_coo = NULL;
-
-//   // if(update_j == 170){
-//   //   cout<<8<<endl;
-//   // }
-
-//   mat *U = matrix_new(submatrix.rows(), d);
-//   mat *S = matrix_new(d, 1);
-
-//   mat *V = matrix_new(submatrix.cols(), d);
-
-//   // if(update_j == 170){
-//   //   cout<<9<<endl;
-//   // }
-
-//   frPCA(ppr_matrix, &U, &S, &V, d, pass);
-
-//   // if(update_j == 170){
-//   //   cout<<10<<endl;
-//   // }
-
-//   csr_matrix_delete(ppr_matrix);
-//   ppr_matrix = NULL;
-
-//   // if(update_j == 170){
-//   //   cout<<11<<endl;
-//   // }
-
-//   mat * S_full = matrix_new(d, d);
-//   for(int i = 0; i < d; i++){
-//     matrix_set_element(S_full, i, i, matrix_get_element(S, i, 0));
-//   }
-
-//   matrix_matrix_mult(U, S_full, matrix_vec_t);
-  
-//   matrix_delete(U);
-//   matrix_delete(S);
-//   matrix_delete(V);
-//   matrix_delete(S_full);
-
-//   U = NULL;
-//   S = NULL;
-//   V = NULL;
-//   S_full = NULL;
-
-
-
-//   auto sub_end_eb_time = chrono::system_clock::now();
-//   auto sub_elapsed_svd_time = chrono::duration_cast<std::chrono::seconds>(sub_end_eb_time - sub_svd_start_time);
-
-// }
-
-
 
 
 
@@ -437,7 +278,6 @@ int lazy_update_start_iter)
 
 
 void dense_sub_svd_function(int d, int pass, 
-// int update_i, 
 mat* submatrix, 
 mat* matrix_vec_t ){
 
@@ -481,12 +321,10 @@ void mkl_right_matrix_multiplication_without_norm(
 d_row_tree_mkl* subset_tree,
 mat* mkl_left_matrix, Eigen::MatrixXd &V_matrix,
 int vertex_number, vector<int> & line_update_mat_tree_record, int current_out_iter,
-// int lazy_update_start_iter,
 vector<long long int>& record_submatrices_nnz
 )
 {
 
-// cout<<"dense 1"<<endl;
     int unique_update_times = 0;
     
     auto total_right_matrix_start_time = chrono::system_clock::now();
@@ -498,68 +336,28 @@ vector<long long int>& record_submatrices_nnz
         continue;
       }
 
-      // cout<<"Updating Iter = "<<iter<<" now!"<<endl;
 
-      
       unique_update_times++;
 
       int temp_matrix_rows = subset_tree->mat_mapping[iter].cols();
       int temp_matrix_cols = subset_tree->mat_mapping[iter].rows();
 
 
-      // if(iter == 170){
-      //   cout<<1<<endl;
-      // }
-      
-
-// cout<<"dense 2"<<endl;
-
       SparseMatrix<double, RowMajor, int> ppr_matrix_temp(temp_matrix_cols, temp_matrix_rows);
 
-// cout<<"dense 3"<<endl;
 
       ppr_matrix_temp = subset_tree->mat_mapping[iter];
 
-      // if(iter == 170){
-      //   cout<<2<<endl;
-      // }
 
-      // if(iter == 170){
-
-      //   cout<<"temp_matrix_rows = "<<temp_matrix_rows<<endl;
-      //   cout<<"temp_matrix_cols = "<<temp_matrix_cols<<endl;
-
-      //   for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-      //     for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-
-      //         cout<<"it.row() = "<<it.row()<<"it.col() = "<<it.col()<<"it.value() = "<<it.value()<<endl;
-
-      //     }
-      //   }
-
-      // }
-
-
-      // long nnz = ppr_matrix_temp.nonZeros();
       long long int nnz = record_submatrices_nnz[iter];
 
       mat_coo *ppr_matrix_coo = coo_matrix_new(temp_matrix_cols, temp_matrix_rows, nnz);
 
-      // if(iter == 170){
-      //   cout<<3<<endl;
-      // }
-
-// cout<<"dense 5"<<endl;
-      // cout<<"nnz = "<<nnz<<endl;
 
       ppr_matrix_coo->nnz = nnz;
 
       long nnz_iter=0;
       double ppr_norm =0;
-
-      // if(iter == 170){
-      //   cout<<4<<endl;
-      // }
 
 
       for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
@@ -580,62 +378,25 @@ vector<long long int>& record_submatrices_nnz
           }
       }
 
-// cout<<"dense 6"<<endl;
-
-      // if(iter == 170){
-      //   cout<<5<<endl;
-      // }
 
       mat_csr* ppr_matrix = csr_matrix_new();
-
-// cout<<"dense 7"<<endl;
-
-      // if(iter == 170){
-      //   cout<<6<<endl;
-      // }
 
 
       csr_init_from_coo(ppr_matrix, ppr_matrix_coo);
 
 
-      // if(iter == 170){
-      //   cout<<7<<endl;
-      // }
-
-// cout<<"dense 8"<<endl;
-
       coo_matrix_delete(ppr_matrix_coo);
 
-// cout<<"dense 9"<<endl;
-
-      // if(iter == 170){
-      //   cout<<8<<endl;
-      // }
 
       ppr_matrix_coo = NULL;
 
       mat *mkl_result_mat = matrix_new(temp_matrix_rows, mkl_left_matrix->ncols);
-
-// cout<<"dense 10"<<endl;
-
-      // if(iter == 170){
-      //   cout<<9<<endl;
-      // }
 
 
       auto right_matrix_start_time = chrono::system_clock::now();
 
       csr_matrix_transpose_matrix_mult(ppr_matrix, mkl_left_matrix, mkl_result_mat);
 
-      // if(iter == 170){
-      //   cout<<10<<endl;
-      // }
-
-// cout<<"dense 11"<<endl;
-
-      // if(iter == 170){
-      //   cout<<11<<endl;
-      // }
 
       auto right_matrix_end_time = chrono::system_clock::now();
       auto elapsed_right_matrix_time = chrono::duration_cast<std::chrono::seconds>(right_matrix_end_time - right_matrix_start_time);
@@ -662,98 +423,19 @@ vector<long long int>& record_submatrices_nnz
       }
   
 
-      // if(iter == 170){
-      //   cout<<12<<endl;
-      // }
-
-// cout<<"dense 12"<<endl;
-
-//       if(current_out_iter >= lazy_update_start_iter - 1){
-//         auto norm_start_time = chrono::system_clock::now();
-
-// // cout<<"dense 13"<<endl;
-
-//         mat * left_transpose_matrix = matrix_new(mkl_left_matrix->ncols, mkl_left_matrix->nrows);
-
-// // cout<<"dense 14"<<endl;
-
-//         matrix_build_transpose(left_transpose_matrix, mkl_left_matrix);
-
-// // cout<<"dense 15"<<endl;
-
-//         //(temp_matrix_rows, mkl_left_matrix->nrows)
-//         mat * final_matrix_shape_for_frobenius = matrix_new(mkl_result_mat->nrows, left_transpose_matrix->ncols);
-
-// // cout<<"dense 16"<<endl;
-
-//         matrix_matrix_mult(mkl_result_mat, left_transpose_matrix, final_matrix_shape_for_frobenius);
-
-// // cout<<"dense 17"<<endl;
-
-//         matrix_delete(left_transpose_matrix);
-
-// // cout<<"dense 18"<<endl;
-
-//         left_transpose_matrix = NULL;
-
-//         for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-//             for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-//                 double value1 = it.value();
-//                 double XY_value = matrix_get_element(final_matrix_shape_for_frobenius, it.col(), it.row());
-//                 matrix_set_element(final_matrix_shape_for_frobenius, it.col(), it.row(), XY_value - value1);
-//             }
-//         }
-
-// // cout<<"dense 19"<<endl;
-
-//         subset_tree->norm_B_Bid_difference_vec[iter] = get_matrix_frobenius_norm(final_matrix_shape_for_frobenius);
-
-// // cout<<"dense 20"<<endl;
-
-//         matrix_delete(final_matrix_shape_for_frobenius);
-        
-// // cout<<"dense 21"<<endl;
-
-//         final_matrix_shape_for_frobenius = NULL;
-
-//         auto norm_end_time = chrono::system_clock::now();
-//         auto elapsed_norm_time = chrono::duration_cast<std::chrono::seconds>(norm_end_time - norm_start_time);
-//         total_norm_time += elapsed_norm_time.count();
-//       }
-
-// cout<<"dense 22"<<endl;
-
-      // if(iter == 170){
-      //   cout<<13<<endl;
-      // }
-
       ppr_matrix_temp.resize(0, 0);
 
-// cout<<"dense 23"<<endl;
 
       ppr_matrix_temp.data().squeeze();
 
-      // if(iter == 170){
-      //   cout<<14<<endl;
-      // }
-
-// cout<<"dense 24"<<endl;
 
       matrix_delete(mkl_result_mat);
       mkl_result_mat = NULL;
 
-      // if(iter == 170){
-      //   cout<<15<<endl;
-      // }
-
-// cout<<"dense 25"<<endl;
 
       csr_matrix_delete(ppr_matrix);
       ppr_matrix = NULL;
 
-      // if(iter == 170){
-      //   cout<<16<<endl;
-      // }
 
     }
     cout<<"right_unique_update_times = "<<unique_update_times<<endl;
@@ -765,440 +447,6 @@ vector<long long int>& record_submatrices_nnz
     cout << "Total norm cost time = "<< total_norm_time << endl;
 
 }
-
-
-
-
-
-
-
-// void mkl_right_matrix_multiplication(
-// d_row_tree_mkl* subset_tree,
-// mat* mkl_left_matrix, Eigen::MatrixXd &V_matrix,
-// int vertex_number, vector<int> & line_update_mat_tree_record, int current_out_iter,
-// int lazy_update_start_iter,
-// vector<int>& record_submatrices_nnz
-// )
-// {
-
-// // cout<<"dense 1"<<endl;
-//     int unique_update_times = 0;
-    
-//     auto total_right_matrix_start_time = chrono::system_clock::now();
-    
-//     double total_norm_time = 0;
-
-//     for(int iter = 0; iter < subset_tree->nParts; iter++){
-//       if(line_update_mat_tree_record[iter] != current_out_iter){
-//         continue;
-//       }
-
-//       // cout<<"Updating Iter = "<<iter<<" now!"<<endl;
-
-      
-//       unique_update_times++;
-
-//       int temp_matrix_rows = subset_tree->mat_mapping[iter].cols();
-//       int temp_matrix_cols = subset_tree->mat_mapping[iter].rows();
-
-
-//       // if(iter == 170){
-//       //   cout<<1<<endl;
-//       // }
-      
-
-// // cout<<"dense 2"<<endl;
-
-//       SparseMatrix<double, RowMajor, int> ppr_matrix_temp(temp_matrix_cols, temp_matrix_rows);
-
-// // cout<<"dense 3"<<endl;
-
-//       ppr_matrix_temp = subset_tree->mat_mapping[iter];
-
-//       // if(iter == 170){
-//       //   cout<<2<<endl;
-//       // }
-
-//       // if(iter == 170){
-
-//       //   cout<<"temp_matrix_rows = "<<temp_matrix_rows<<endl;
-//       //   cout<<"temp_matrix_cols = "<<temp_matrix_cols<<endl;
-
-//       //   for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-//       //     for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-
-//       //         cout<<"it.row() = "<<it.row()<<"it.col() = "<<it.col()<<"it.value() = "<<it.value()<<endl;
-
-//       //     }
-//       //   }
-
-//       // }
-
-
-//       // long nnz = ppr_matrix_temp.nonZeros();
-//       long nnz = record_submatrices_nnz[iter];
-
-//       mat_coo *ppr_matrix_coo = coo_matrix_new(temp_matrix_cols, temp_matrix_rows, nnz);
-
-//       // if(iter == 170){
-//       //   cout<<3<<endl;
-//       // }
-
-// // cout<<"dense 5"<<endl;
-//       // cout<<"nnz = "<<nnz<<endl;
-
-//       ppr_matrix_coo->nnz = nnz;
-
-//       long nnz_iter=0;
-//       double ppr_norm =0;
-
-//       // if(iter == 170){
-//       //   cout<<4<<endl;
-//       // }
-
-
-//       for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-//           for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-
-//               double value1 = it.value();
-//               if(value1 == 0){
-//                 // continue;
-//               }
-//               else{
-//                 ppr_matrix_coo->rows[nnz_iter] = it.row() + 1;
-//                 ppr_matrix_coo->cols[nnz_iter] = it.col() + 1;
-
-//                 ppr_matrix_coo->values[nnz_iter] = value1;
-//                 ppr_norm += ppr_matrix_coo->values[nnz_iter]*ppr_matrix_coo->values[nnz_iter];
-//                 nnz_iter ++;
-//               }
-//           }
-//       }
-
-// // cout<<"dense 6"<<endl;
-
-//       // if(iter == 170){
-//       //   cout<<5<<endl;
-//       // }
-
-//       mat_csr* ppr_matrix = csr_matrix_new();
-
-// // cout<<"dense 7"<<endl;
-
-//       // if(iter == 170){
-//       //   cout<<6<<endl;
-//       // }
-
-
-//       csr_init_from_coo(ppr_matrix, ppr_matrix_coo);
-
-
-//       // if(iter == 170){
-//       //   cout<<7<<endl;
-//       // }
-
-// // cout<<"dense 8"<<endl;
-
-//       coo_matrix_delete(ppr_matrix_coo);
-
-// // cout<<"dense 9"<<endl;
-
-//       // if(iter == 170){
-//       //   cout<<8<<endl;
-//       // }
-
-//       ppr_matrix_coo = NULL;
-
-//       mat *mkl_result_mat = matrix_new(temp_matrix_rows, mkl_left_matrix->ncols);
-
-// // cout<<"dense 10"<<endl;
-
-//       // if(iter == 170){
-//       //   cout<<9<<endl;
-//       // }
-
-
-//       auto right_matrix_start_time = chrono::system_clock::now();
-
-//       csr_matrix_transpose_matrix_mult(ppr_matrix, mkl_left_matrix, mkl_result_mat);
-
-//       // if(iter == 170){
-//       //   cout<<10<<endl;
-//       // }
-
-// // cout<<"dense 11"<<endl;
-
-//       // if(iter == 170){
-//       //   cout<<11<<endl;
-//       // }
-
-//       auto right_matrix_end_time = chrono::system_clock::now();
-//       auto elapsed_right_matrix_time = chrono::duration_cast<std::chrono::seconds>(right_matrix_end_time - right_matrix_start_time);
-
-//       if(iter != subset_tree->nParts-1){
-//         for(int i = 0; i < temp_matrix_rows; i++){
-//             for(int j = 0; j < mkl_left_matrix->ncols; j++){
-//                 V_matrix(iter * temp_matrix_rows + i, j) = matrix_get_element(mkl_result_mat, i, j);
-//                 if(isnan(V_matrix(iter * temp_matrix_rows + i, j)) || isinf(V_matrix(iter * temp_matrix_rows + i, j))){
-//                     cout<<"V_matrix("<<i<<", "<<j<<") = "<<V_matrix(i, j)<<endl;
-//                 }
-//             }
-//         }
-//       }
-//       else{
-//         for(int i = 0; i < temp_matrix_rows; i++){
-//             for(int j = 0; j < mkl_left_matrix->ncols; j++){
-//                 V_matrix(vertex_number - temp_matrix_rows + i, j) = matrix_get_element(mkl_result_mat, i, j);
-//                 if(isnan(V_matrix(vertex_number - temp_matrix_rows + i, j)) || isinf(V_matrix(vertex_number - temp_matrix_rows + i, j))){
-//                     cout<<"V_matrix("<<i<<", "<<j<<") = "<<V_matrix(i, j)<<endl;
-//                 }
-//             }
-//         }
-//       }
-  
-
-//       // if(iter == 170){
-//       //   cout<<12<<endl;
-//       // }
-
-// // cout<<"dense 12"<<endl;
-
-//       if(current_out_iter >= lazy_update_start_iter - 1){
-//         auto norm_start_time = chrono::system_clock::now();
-
-// // cout<<"dense 13"<<endl;
-
-//         mat * left_transpose_matrix = matrix_new(mkl_left_matrix->ncols, mkl_left_matrix->nrows);
-
-// // cout<<"dense 14"<<endl;
-
-//         matrix_build_transpose(left_transpose_matrix, mkl_left_matrix);
-
-// // cout<<"dense 15"<<endl;
-
-//         //(temp_matrix_rows, mkl_left_matrix->nrows)
-//         mat * final_matrix_shape_for_frobenius = matrix_new(mkl_result_mat->nrows, left_transpose_matrix->ncols);
-
-// // cout<<"dense 16"<<endl;
-
-//         matrix_matrix_mult(mkl_result_mat, left_transpose_matrix, final_matrix_shape_for_frobenius);
-
-// // cout<<"dense 17"<<endl;
-
-//         matrix_delete(left_transpose_matrix);
-
-// // cout<<"dense 18"<<endl;
-
-//         left_transpose_matrix = NULL;
-
-//         for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-//             for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-//                 double value1 = it.value();
-//                 double XY_value = matrix_get_element(final_matrix_shape_for_frobenius, it.col(), it.row());
-//                 matrix_set_element(final_matrix_shape_for_frobenius, it.col(), it.row(), XY_value - value1);
-//             }
-//         }
-
-// // cout<<"dense 19"<<endl;
-
-//         subset_tree->norm_B_Bid_difference_vec[iter] = get_matrix_frobenius_norm(final_matrix_shape_for_frobenius);
-
-// // cout<<"dense 20"<<endl;
-
-//         matrix_delete(final_matrix_shape_for_frobenius);
-        
-// // cout<<"dense 21"<<endl;
-
-//         final_matrix_shape_for_frobenius = NULL;
-
-//         auto norm_end_time = chrono::system_clock::now();
-//         auto elapsed_norm_time = chrono::duration_cast<std::chrono::seconds>(norm_end_time - norm_start_time);
-//         total_norm_time += elapsed_norm_time.count();
-//       }
-
-// // cout<<"dense 22"<<endl;
-
-//       // if(iter == 170){
-//       //   cout<<13<<endl;
-//       // }
-
-//       ppr_matrix_temp.resize(0, 0);
-
-// // cout<<"dense 23"<<endl;
-
-//       ppr_matrix_temp.data().squeeze();
-
-//       // if(iter == 170){
-//       //   cout<<14<<endl;
-//       // }
-
-// // cout<<"dense 24"<<endl;
-
-//       matrix_delete(mkl_result_mat);
-//       mkl_result_mat = NULL;
-
-//       // if(iter == 170){
-//       //   cout<<15<<endl;
-//       // }
-
-// // cout<<"dense 25"<<endl;
-
-//       csr_matrix_delete(ppr_matrix);
-//       ppr_matrix = NULL;
-
-//       // if(iter == 170){
-//       //   cout<<16<<endl;
-//       // }
-
-//     }
-//     cout<<"right_unique_update_times = "<<unique_update_times<<endl;
-
-//     auto total_right_matrix_end_time = chrono::system_clock::now();
-//     auto total_elapsed_right_matrix_time = chrono::duration_cast<std::chrono::seconds>(total_right_matrix_end_time - total_right_matrix_start_time);
-//     cout << "Total right matrix cost time: "<< total_elapsed_right_matrix_time.count() << endl;
-
-//     cout << "Total norm cost time = "<< total_norm_time << endl;
-
-// }
-
-
-
-
-
-
-// void mkl_right_matrix_multiplication(
-// d_row_tree_mkl* d_row_tree_vec,
-// mat* mkl_left_matrix, 
-// int vertex_number, vector<int> & line_update_mat_tree_record, int current_out_iter,
-// int lazy_update_start_iter,
-// vector<int>& record_submatrices_nnz
-// )
-// {
-//     int unique_update_times = 0;
-    
-//     auto total_right_matrix_start_time = chrono::system_clock::now();
-    
-//     double total_norm_time = 0;
-
-//     for(int iter = 0; iter < d_row_tree_vec->nParts; iter++){
-//       if(line_update_mat_tree_record[iter] != current_out_iter){
-//         continue;
-//       }
-//       unique_update_times++;
-
-//       int temp_matrix_rows = d_row_tree_vec->mat_mapping[iter].cols();
-//       int temp_matrix_cols =d_row_tree_vec->mat_mapping[iter].rows();
-
-//       SparseMatrix<double, RowMajor, int> ppr_matrix_temp(temp_matrix_cols, temp_matrix_rows);
-
-//       ppr_matrix_temp = d_row_tree_vec->mat_mapping[iter];
-
-//       // long nnz = ppr_matrix_temp.nonZeros();
-//       long nnz = record_submatrices_nnz[iter];
-
-//       mat_coo *ppr_matrix_coo = coo_matrix_new(temp_matrix_cols, temp_matrix_rows, nnz);
-
-//       ppr_matrix_coo->nnz = nnz;
-
-//       long nnz_iter=0;
-//       double ppr_norm =0;
-
-//       for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-//           for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-//               double value1 = it.value();
-//               if(value1 == 0){
-
-//               }
-//               else{
-//                 ppr_matrix_coo->rows[nnz_iter] = it.row() + 1;
-//                 ppr_matrix_coo->cols[nnz_iter] = it.col() + 1;
-
-//                 ppr_matrix_coo->values[nnz_iter] = value1;
-//                 ppr_norm += ppr_matrix_coo->values[nnz_iter]*ppr_matrix_coo->values[nnz_iter];
-//                 nnz_iter ++;
-//               }
-//           }
-//       }
-
-
-//       mat_csr* ppr_matrix = csr_matrix_new();
-
-
-//       csr_init_from_coo(ppr_matrix, ppr_matrix_coo);
-
-//       coo_matrix_delete(ppr_matrix_coo);
-
-//       ppr_matrix_coo = NULL;
-
-
-//       mat *mkl_result_mat = matrix_new(temp_matrix_rows, mkl_left_matrix->ncols);
-
-//       auto right_matrix_start_time = chrono::system_clock::now();
-
-//       csr_matrix_transpose_matrix_mult(ppr_matrix, mkl_left_matrix, mkl_result_mat);
-
-//       auto right_matrix_end_time = chrono::system_clock::now();
-//       auto elapsed_right_matrix_time = chrono::duration_cast<std::chrono::seconds>(right_matrix_end_time - right_matrix_start_time);
-
-
-//       if(current_out_iter >= lazy_update_start_iter - 1){
-//         auto norm_start_time = chrono::system_clock::now();
-
-//         mat * left_transpose_matrix = matrix_new(mkl_left_matrix->ncols, mkl_left_matrix->nrows);
-
-//         matrix_build_transpose(left_transpose_matrix, mkl_left_matrix);
-
-//         mat * final_matrix_shape_for_frobenius = matrix_new(mkl_result_mat->nrows, left_transpose_matrix->ncols);
-
-//         matrix_matrix_mult(mkl_result_mat, left_transpose_matrix, final_matrix_shape_for_frobenius);
-
-//         matrix_delete(left_transpose_matrix);
-
-//         left_transpose_matrix = NULL;
-
-//         for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-//             for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-//                 double value1 = it.value();
-//                 double XY_value = matrix_get_element(final_matrix_shape_for_frobenius, it.col(), it.row());
-//                 matrix_set_element(final_matrix_shape_for_frobenius, it.col(), it.row(), XY_value - value1);
-//             }
-//         }
-
-//         d_row_tree_vec->norm_B_Bid_difference_vec[iter] = get_matrix_frobenius_norm(final_matrix_shape_for_frobenius);
-
-//         matrix_delete(final_matrix_shape_for_frobenius);
-        
-//         final_matrix_shape_for_frobenius = NULL;
-
-//         auto norm_end_time = chrono::system_clock::now();
-//         auto elapsed_norm_time = chrono::duration_cast<std::chrono::seconds>(norm_end_time - norm_start_time);
-//         total_norm_time += elapsed_norm_time.count();
-//       }
-
-//       ppr_matrix_temp.resize(0, 0);
-
-//       ppr_matrix_temp.data().squeeze();
-
-//       matrix_delete(mkl_result_mat);
-//       mkl_result_mat = NULL;
-
-//       csr_matrix_delete(ppr_matrix);
-//       ppr_matrix = NULL;
-//     }
-//     cout<<"right_unique_update_times = "<<unique_update_times<<endl;
-
-//     auto total_right_matrix_end_time = chrono::system_clock::now();
-//     auto total_elapsed_right_matrix_time = chrono::duration_cast<std::chrono::seconds>(total_right_matrix_end_time - total_right_matrix_start_time);
-//     cout << "Total right matrix cost time: "<< total_elapsed_right_matrix_time.count() << endl;
-
-//     cout << "Total norm cost time = "<< total_norm_time << endl;
-
-// }
-
-
-
-
-
 
 
 
@@ -1410,8 +658,6 @@ int main(int argc,  char **argv){
 
   float **residue = new float* [count_labeled_node];
   float **pi = new float* [count_labeled_node];
-  // double **residue = new double* [count_labeled_node];
-  // double **pi = new double* [count_labeled_node];
 
 
   bool **flags = new bool* [count_labeled_node];
@@ -1420,10 +666,8 @@ int main(int argc,  char **argv){
     residue[i] = new float[vertex_number];
 
     pi[i] = new float[vertex_number];
-    // residue[i] = new double[vertex_number];
-
-    // pi[i] = new double[vertex_number];
-
+ 
+ 
     flags[i] = new bool[vertex_number];
   }
   
@@ -1439,22 +683,12 @@ int main(int argc,  char **argv){
     };
   }
 
-  // for(int i = 0; i < count_labeled_node; i++){
-  //   queue_list_transpose[i] = Queue
-  //   {
-  //     (int*)malloc( sizeof(int) * (INT_MAX - 1) ),
-  //     (INT_MAX - 1),
-  //     0,
-  //     0
-  //   };
-  // }
 
   Queue * queue_list_transpose = new Queue[count_labeled_node];
 
   float **residue_transpose = new float* [count_labeled_node];
   float **pi_transpose = new float* [count_labeled_node];
-  // double **residue_transpose = new double* [count_labeled_node];
-  // double **pi_transpose = new double* [count_labeled_node];
+
 
   bool **flags_transpose = new bool* [count_labeled_node];
 
@@ -1462,9 +696,7 @@ int main(int argc,  char **argv){
     residue_transpose[i] = new float[vertex_number];
 
     pi_transpose[i] = new float[vertex_number];
-    // residue_transpose[i] = new double[vertex_number];
 
-    // pi_transpose[i] = new double[vertex_number];
 
     flags_transpose[i] = new bool[vertex_number];
   }
@@ -1482,16 +714,6 @@ int main(int argc,  char **argv){
     };
   }
 
-
-    // for(int i = 0; i < count_labeled_node; i++){
-    //   queue_list_transpose[i] = Queue
-    //   {
-    //     (int*)malloc( sizeof(int) * (INT_MAX - 1) ),
-    //     (INT_MAX - 1),
-    //     0,
-    //     0
-    //   };
-    // }
 
 
   //Test Part
@@ -1541,10 +763,6 @@ int main(int argc,  char **argv){
   vector<long long int> record_submatrices_nnz(nParts, 0);
 
 
-  // MatrixXd U_all_shots((snapshots_number-1) * count_labeled_node, d);
-
-  // MatrixXd V_all_shots((snapshots_number-1) * vertex_number, d);
-
 
   for(int iter = 1; iter < snapshots_number; iter++){
     auto iter_start_time = chrono::system_clock::now();    
@@ -1559,25 +777,9 @@ int main(int argc,  char **argv){
     }
     
 
-    // if(iter == snapshots_number - 1){
-    //   continue;
-    // }
-
-
-    // if(iter != snapshots_number - 1){
-    //   continue;
-    // }
-
 
     vector<long long int> all_count(NUMTHREAD);
 
-
-    // vector<vector<int>>record_former_mat_tree_number;  
-
-    // record_former_mat_tree_number.resize(nParts);
-    // for(int i = 0; i < record_former_mat_number.size(); i++){
-    //     record_former_mat_number[i] = subset_tree->mat_mapping[j].nonZeros();
-    // }
 
 
     vector<thread> refresh_threads;
@@ -1596,71 +798,18 @@ int main(int argc,  char **argv){
       }
 
 
-      // refresh_threads.push_back(thread(DenseDirected_Refresh_PPR_initialization_LP, start, end, g, residuemax, reservemin, 
-      //   alpha, 
-      //   std::ref(labeled_node_vec), 
-      //   residue, 
-      //   pi, 
-      //   flags, 
-      //   queue_list, 
-      //   residue_transpose, 
-      //   pi_transpose,
-      //   flags_transpose, 
-      //   queue_list_transpose,
-      //   // row_dim,
-      //   common_group_size,
-      //   // number_of_d_row_tree,
-      //   nParts,
-      //   std::ref(inner_group_mapping),
-      //   iter,
-      //   vertex_number,
-      //   // std::ref(d_row_tree_vec),
-      //   subset_tree,
-      //   dynamic_ppr_start_iter )
-      // );
-
-
-      // refresh_threads.push_back(thread(nodegree_DenseDirected_Refresh_PPR_initialization_LP, start, end, g, residuemax, reservemin, 
-      //   alpha, 
-      //   // std::ref(labeled_node_vec), 
-      //   // std::ref(residue), 
-      //   // std::ref(pi), 
-      //   std::ref(labeled_node_vec), 
-      //   residue, 
-      //   pi, 
-      //   flags, 
-      //   queue_list, 
-      //   // row_dim,
-      //   common_group_size,
-      //   // number_of_d_row_tree,
-      //   nParts,
-      //   std::ref(inner_group_mapping),
-      //   iter,
-      //   vertex_number,
-      //   // std::ref(d_row_tree_vec),
-      //   subset_tree,
-      //   dynamic_ppr_start_iter )
-      // );
-
-
       refresh_threads.push_back(thread(nodegree_DenseDirected_Refresh_PPR_initialization, start, end, g, residuemax, reservemin, 
         alpha, 
-        // std::ref(labeled_node_vec), 
-        // std::ref(residue), 
-        // std::ref(pi), 
         std::ref(labeled_node_vec), 
         residue, 
         pi, 
         flags, 
         queue_list, 
-        // row_dim,
         common_group_size,
-        // number_of_d_row_tree,
         nParts,
         std::ref(inner_group_mapping),
         iter,
         vertex_number,
-        // std::ref(d_row_tree_vec),
         subset_tree,
         dynamic_ppr_start_iter )
       );
@@ -1701,45 +850,18 @@ int main(int argc,  char **argv){
       }
 
 
-      // threads.push_back(thread(nodegree_DenseDirectedDynamicForwardPush_LP, start, end, g, residuemax, reservemin, 
-      // alpha, std::ref(labeled_node_vec), 
-      // residue, pi, 
-      // flags, queue_list, 
-      // // row_dim, 
-      // common_group_size,
-      // // number_of_d_row_tree, 
-      // nParts,
-      // std::ref(inner_group_mapping),
-      // // std::ref(d_row_tree_vec)
-      // subset_tree
-      // ));
 
       threads.push_back(thread(nodegree_DenseDirectedDynamicForwardPush, start, end, g, residuemax, reservemin, 
       alpha, std::ref(labeled_node_vec), 
       residue, pi, 
       flags, queue_list, 
-      // row_dim, 
       common_group_size,
-      // number_of_d_row_tree, 
       nParts,
       std::ref(inner_group_mapping),
-      // std::ref(d_row_tree_vec)
       subset_tree
       ));
 
 
-      // threads.push_back(thread(DenseDirectedDynamicForwardPush_LP, start, end, g, residuemax, reservemin, 
-      // alpha, std::ref(labeled_node_vec), 
-      // residue, pi, 
-      // flags, queue_list, 
-      // // row_dim, 
-      // common_group_size,
-      // // number_of_d_row_tree, 
-      // nParts,
-      // std::ref(inner_group_mapping),
-      // // std::ref(d_row_tree_vec)
-      // subset_tree
-      // ));
 
     }
 
@@ -1793,32 +915,6 @@ int main(int argc,  char **argv){
       }
 
 
-
-
-
-
-
-      // refresh_threads.push_back(thread(nodegree_DenseDirected_Refresh_PPR_initialization_Transpose_LP, 
-      // start, end, g, residuemax, reservemin, 
-      //   alpha, 
-      //   std::ref(labeled_node_vec), 
-      //   residue_transpose, 
-      //   pi_transpose,
-      //   flags_transpose, 
-      //   queue_list_transpose,
-      //   // row_dim,
-      //   common_group_size,
-      //   // number_of_d_row_tree,
-      //   nParts,
-      //   std::ref(inner_group_mapping),
-      //   iter,
-      //   vertex_number,
-      //   // std::ref(d_row_tree_vec),
-      //   subset_tree,
-      //   dynamic_ppr_start_iter )
-      // );
-
-
       refresh_threads.push_back(thread(nodegree_DenseDirected_Refresh_PPR_initialization_Transpose, 
       start, end, g, residuemax, reservemin, 
         alpha, 
@@ -1827,14 +923,11 @@ int main(int argc,  char **argv){
         pi_transpose,
         flags_transpose, 
         queue_list_transpose,
-        // row_dim,
         common_group_size,
-        // number_of_d_row_tree,
         nParts,
         std::ref(inner_group_mapping),
         iter,
         vertex_number,
-        // std::ref(d_row_tree_vec),
         subset_tree,
         dynamic_ppr_start_iter )
       );
@@ -1862,24 +955,6 @@ int main(int argc,  char **argv){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     cout << "transpose ppr computation " << endl;
     auto ppr_transpose_start_time = std::chrono::system_clock::now();
 
@@ -1896,44 +971,16 @@ int main(int argc,  char **argv){
 
 
 
-      // threads.push_back(thread(nodegree_DenseDirectedDynamicForwardPushTranspose_LP, start, end, g, residuemax, reservemin, 
-      // alpha, std::ref(labeled_node_vec), 
-      // residue_transpose, pi_transpose, 
-      // flags_transpose, queue_list_transpose, 
-      // // row_dim, 
-      // common_group_size, 
-      // // number_of_d_row_tree, 
-      // nParts,
-      // std::ref(inner_group_mapping),
-      // // std::ref(d_row_tree_vec)
-      // subset_tree
-      // ));
 
       threads.push_back(thread(nodegree_DenseDirectedDynamicForwardPushTranspose, start, end, g, residuemax, reservemin, 
       alpha, std::ref(labeled_node_vec), 
       residue_transpose, pi_transpose, 
       flags_transpose, queue_list_transpose, 
-      // row_dim, 
       common_group_size, 
-      // number_of_d_row_tree, 
       nParts,
       std::ref(inner_group_mapping),
-      // std::ref(d_row_tree_vec)
       subset_tree
       ));
-
-      // threads.push_back(thread(DenseDirectedDynamicForwardPushTranspose_LP, start, end, g, residuemax, reservemin, 
-      // alpha, std::ref(labeled_node_vec), residue_transpose, pi_transpose, 
-      // flags_transpose, queue_list_transpose, 
-      // // row_dim, 
-      // common_group_size, 
-      // // number_of_d_row_tree, 
-      // nParts,
-      // std::ref(inner_group_mapping),
-      // // std::ref(d_row_tree_vec)
-      // subset_tree
-      // ));
-
 
     }
 
@@ -1955,13 +1002,10 @@ int main(int argc,  char **argv){
         vector<thread> threads_top_list;
 
         for(int i = 0; i < vec_mapping.size(); i++){
-            // SparseMatrix<double, 0, int> &current_sparse_mat_mapping = subset_tree->mat_mapping[i];
 
             threads_top_list.push_back(thread(Log_sparse_matrix_entries_with_norm_computation, 
-            // k, 
             i,    
             reservemin, 
-            // std::ref(d_row_tree_vec),
             subset_tree,
             std::ref(vec_mapping),
             std::ref(update_mat_tree_record),
@@ -1991,18 +1035,13 @@ int main(int argc,  char **argv){
 
         vector<thread> threads_top_list;
 
-        for(int i = 0; i < vec_mapping.size(); i++){
-            // SparseMatrix<double, 0, int> &current_sparse_mat_mapping = subset_tree->mat_mapping[i];
-    
+        for(int i = 0; i < vec_mapping.size(); i++){    
     
             update_mat_tree_record[i] = iter;
 
-
             threads_top_list.push_back(thread(Log_sparse_matrix_entries_LP, 
-            // k, 
             i,    
             reservemin, 
-            // std::ref(d_row_tree_vec),
             subset_tree,
             std::ref(vec_mapping),
             std::ref(record_submatrices_nnz)
@@ -2010,8 +1049,6 @@ int main(int argc,  char **argv){
 
         }
 
-
-        // int all_blocks_number = number_of_d_row_tree * nParts;
         int all_blocks_number = nParts;
         for (int t = 0; t < all_blocks_number; t++){
           threads_top_list[t].join();
@@ -2023,9 +1060,6 @@ int main(int argc,  char **argv){
     
 
     
-
-    // for(int update_i = 0; update_i < number_of_d_row_tree; update_i++){
-
       int largest_level_start_index = subset_tree->largest_level_start_index;
 
       int count_current_threads_number = 0;
@@ -2045,12 +1079,6 @@ int main(int argc,  char **argv){
 
           left_matrix_pointer_number[iter - 1]++;
 
-
-        //   sparse_sub_svd_function(d, pass, 
-        //   update_j, subset_tree->mat_mapping[update_j], 
-        //   subset_tree->hierarchy_matrix_vec[largest_level_start_index + update_j],
-        //   std::ref(record_submatrices_nnz));
-
           sparse_sub_svd_function_with_norm_computation(d, pass, 
           update_j, 
           std::ref(record_submatrices_nnz),
@@ -2068,15 +1096,11 @@ int main(int argc,  char **argv){
           }
           count_current_threads_number++;
 
-          // cout<<"update_j = "<<update_j<<endl;
-
-          // cout<<"sparse_unique_update_times = "<<sparse_unique_update_times<<endl;
 
           record_next_level.insert(son_index);
         }
       }
 
-      // cout<<"sparse_unique_update_times = "<<sparse_unique_update_times<<endl;
 
       if(sparse_unique_update_times == 0){
         cout<<"Error bounded! No SVD update for iter = "<<iter<<"!"<<endl;
@@ -2205,18 +1229,14 @@ int main(int argc,  char **argv){
         record_next_level = temp_record_next_level;
 
       }
-    // }
-    
-    // int iter_beginning = (iter-1) * count_labeled_node;
-    // int right_iter_beginning = (iter-1) * vertex_number * number_of_d_row_tree;    
+      
 
     auto iter_end_time = chrono::system_clock::now();
     auto elapsed_iter_time = chrono::duration_cast<std::chrono::seconds>(iter_end_time - iter_start_time);
     cout << "Iter = "<<iter<<", time = "<< elapsed_iter_time.count() << endl;  
 
 
-    // for(int i = 0; i < d_row_tree_vec.size(); i++){
-      
+
     MatrixXd Eigen_U;
 
     get_Eigen_matrix_from_mkl(U_cur_iter, Eigen_U);      
@@ -2261,13 +1281,8 @@ int main(int argc,  char **argv){
     left_matrix_U_cache[iter - 1] = Eigen_U;
 
 
-    // MatrixXd V;
-    // V.resize(vertex_number, d);
-
-
     mkl_right_matrix_multiplication_without_norm(subset_tree, U_cur_iter,
     V, vertex_number, update_mat_tree_record, iter, 
-    // lazy_update_start_iter,
     std::ref(record_submatrices_nnz));
 
     auto right_matrix_end_time = chrono::system_clock::now();
@@ -2344,59 +1359,18 @@ int main(int argc,  char **argv){
     cout << "LP at iter "<<iter<<", time = "<< elapsed_LP_time.count() << endl;
     cout << "link prediction precision: " << predict_positive_number/ (double) (sample_m) << endl;
 
-    // auto write_start_time = chrono::system_clock::now();
-    
-    // U_all_shots.block( (iter - 1) * count_labeled_node, 0, count_labeled_node, d) = U;
-    // V_all_shots.block( (iter - 1) * vertex_number, 0, vertex_number, d) = V;
-    
-    // auto write_end_time = chrono::system_clock::now();
-    
-    // auto elapsed_write_time = chrono::duration_cast<std::chrono::seconds>(write_end_time - write_start_time);
-
-    // cout << "Elapsed write time = "<< elapsed_write_time.count() << endl;
-
-    // }
 
   }
 
 
   auto end_eb_time = chrono::system_clock::now();
   
-  // int residue_order = 0;
-  // if(residuemax * 10000 == 1){
-  //   residue_order = 5;
-  // }
-  // else if(residuemax * 100000 == 1){
-  //   residue_order = 6;
-  // }
-  // else if(residuemax * 1000000 == 1){
-  //   residue_order = 7;
-  // }
-  // else if(residuemax * 10000000 == 1){
-  //   residue_order = 8;
-  // }
-  // else{
-  //   cout<<"WRONG!"<<endl;
-  // }
-
-
-  // string outUfile = EBpath + queryname + std::to_string(residue_order) + "_" + std::to_string(nParts) + "_" + std::to_string(hierarchy_n) + "_" + "De_svd_d_Dppr_parallel_U.csv";
-
-  // string outVfile = EBpath + queryname + std::to_string(residue_order) + "_" + std::to_string(nParts) + "_" + std::to_string(hierarchy_n) + "_" + "De_svd_d_Dppr_parallel_V.csv";
-
-  // ofstream outU(outUfile.c_str());
-  // ofstream outV(outVfile.c_str());
-
-  // outU << U_all_shots.format(CSVFormat);
-  // outV << V_all_shots.format(CSVFormat);
-
 
   auto end_time = chrono::system_clock::now();
   auto elapsed_write_time = chrono::duration_cast<std::chrono::seconds>(end_time - end_eb_time);
   cout << "write out embedding time: "<< elapsed_write_time.count() << endl;
   auto elapsed_time = chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
   cout << "total embedding time: "<< elapsed_time.count() << endl;
-  // outU.close();
 
 }
 

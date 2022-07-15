@@ -64,92 +64,6 @@ const static IOFormat CSVFormat(StreamPrecision, DontAlignCols, ", ", "\n");
 
 
 
-// void sparse_sub_svd_function(int d, int pass, 
-// // int update_i, 
-// int update_j, Eigen::SparseMatrix<double, 0, int> &submatrix, 
-// mat* matrix_vec_t,
-// vector<long long int>& record_submatrices_nnz
-// ){
-
-//   SparseMatrix<double, RowMajor, long> ppr_matrix_temp(submatrix.rows(), submatrix.cols());
-
-//   ppr_matrix_temp = submatrix;
-
-//   // long nnz = ppr_matrix_temp.nonZeros();
-//   long long int nnz = record_submatrices_nnz[update_j];
-
-//   assert(nnz < INT_MAX);
-//   auto hash_coo_time = chrono::system_clock::now();
-
-//   mat_coo *ppr_matrix_coo = coo_matrix_new(submatrix.rows(), submatrix.cols(), nnz);
-//   ppr_matrix_coo->nnz = nnz;
-
-//   long nnz_iter=0;
-//   double ppr_norm =0;
-
-//   for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-//     for (SparseMatrix<double, RowMajor, long int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-//       double value1 = it.value();
-//       if(value1 == 0){
-
-//       }
-//       else{
-//         ppr_matrix_coo->rows[nnz_iter] = it.row() + 1;
-//         ppr_matrix_coo->cols[nnz_iter] = it.col() + 1;
-//         ppr_matrix_coo->values[nnz_iter] = value1;
-//         ppr_norm += ppr_matrix_coo->values[nnz_iter]*ppr_matrix_coo->values[nnz_iter];
-//         nnz_iter ++;
-//       }
-//     }
-//   }
-//   ppr_matrix_temp.resize(0,0);
-//   ppr_matrix_temp.data().squeeze();
-
-//   auto coo_csr_time = chrono::system_clock::now();
-//   auto elapsed_sparse_coo_time = chrono::duration_cast<std::chrono::seconds>(coo_csr_time- hash_coo_time);
-
-//   mat_csr* ppr_matrix = csr_matrix_new();
-//   csr_init_from_coo(ppr_matrix, ppr_matrix_coo);
-
-//   coo_matrix_delete(ppr_matrix_coo);
-//   ppr_matrix_coo = NULL;
-
-//   mat *U = matrix_new(submatrix.rows(), d);
-//   mat *S = matrix_new(d, 1);
-
-//   mat *V = matrix_new(submatrix.cols(), d);
-
-//   frPCA(ppr_matrix, &U, &S, &V, d, pass);
-
-//   mat * S_full = matrix_new(d, d);
-//   for(int i = 0; i < d; i++){
-//     matrix_set_element(S_full, i, i, matrix_get_element(S, i, 0));
-//   }
-
-//   matrix_matrix_mult(U, S_full, matrix_vec_t);
-  
-//   matrix_delete(U);
-//   matrix_delete(S);
-//   matrix_delete(V);
-//   matrix_delete(S_full);
-//   U = NULL;
-//   S = NULL;
-//   V = NULL;
-//   S_full = NULL;
-  
-//   csr_matrix_delete(ppr_matrix);
-
-//   ppr_matrix = NULL;
-
-// }
-
-
-
-
-
-
-
-
 
 
 
@@ -159,10 +73,7 @@ const static IOFormat CSVFormat(StreamPrecision, DontAlignCols, ", ", "\n");
 
 
 void sparse_sub_svd_function_with_norm_computation(int d, int pass, 
-// int update_i, 
 int update_j, 
-// Eigen::SparseMatrix<double, 0, int> &submatrix, 
-// mat* matrix_vec_t,
 vector<long long int>& record_submatrices_nnz,
 d_row_tree_mkl* subset_tree,
 int largest_level_start_index,
@@ -324,16 +235,7 @@ int lazy_update_start_iter)
 
 
 
-
-
-
-
-
-
-
-
 void dense_sub_svd_function(int d, int pass, 
-// int update_i, 
 mat* submatrix, 
 mat* matrix_vec_t ){
 
@@ -365,141 +267,6 @@ mat* matrix_vec_t ){
 
 
 
-
-
-
-
-
-
-
-
-
-// void mkl_right_matrix_multiplication(
-// d_row_tree_mkl* subset_tree,
-// mat* mkl_left_matrix, 
-// int vertex_number, vector<int> & line_update_mat_record, int current_out_iter,
-// int lazy_update_start_iter,
-// vector<int>& record_submatrices_nnz
-// )
-// {
-//     int unique_update_times = 0;
-    
-//     auto total_right_matrix_start_time = chrono::system_clock::now();
-    
-//     double total_norm_time = 0;
-
-//     for(int iter = 0; iter < subset_tree->nParts; iter++){
-//       if(line_update_mat_record[iter] != current_out_iter){
-//         continue;
-//       }
-//       unique_update_times++;
-
-//       int temp_matrix_rows = subset_tree->mat_mapping[iter].cols();
-//       int temp_matrix_cols =subset_tree->mat_mapping[iter].rows();
-
-//       SparseMatrix<double, RowMajor, int> ppr_matrix_temp(temp_matrix_cols, temp_matrix_rows);
-
-//       ppr_matrix_temp = subset_tree->mat_mapping[iter];
-
-//       // long nnz = ppr_matrix_temp.nonZeros();
-//       long nnz = record_submatrices_nnz[iter];
-
-//       mat_coo *ppr_matrix_coo = coo_matrix_new(temp_matrix_cols, temp_matrix_rows, nnz);
-
-//       ppr_matrix_coo->nnz = nnz;
-
-//       long nnz_iter=0;
-//       double ppr_norm =0;
-
-//       for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-//           for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-
-//               double value1 = it.value();
-
-//               if(value1 == 0){
-
-//               }
-//               else{
-//                 ppr_matrix_coo->rows[nnz_iter] = it.row() + 1;
-//                 ppr_matrix_coo->cols[nnz_iter] = it.col() + 1;
-
-//                 ppr_matrix_coo->values[nnz_iter] = value1;
-//                 ppr_norm += ppr_matrix_coo->values[nnz_iter]*ppr_matrix_coo->values[nnz_iter];
-//                 nnz_iter ++;
-//               }
-//           }
-//       }
-
-//       mat_csr* ppr_matrix = csr_matrix_new();
-
-//       csr_init_from_coo(ppr_matrix, ppr_matrix_coo);
-
-//       coo_matrix_delete(ppr_matrix_coo);
-
-//       ppr_matrix_coo = NULL;
-
-//       mat *mkl_result_mat = matrix_new(temp_matrix_rows, mkl_left_matrix->ncols);
-
-//       auto right_matrix_start_time = chrono::system_clock::now();
-
-//       csr_matrix_transpose_matrix_mult(ppr_matrix, mkl_left_matrix, mkl_result_mat);
-
-//       auto right_matrix_end_time = chrono::system_clock::now();
-//       auto elapsed_right_matrix_time = chrono::duration_cast<std::chrono::seconds>(right_matrix_end_time - right_matrix_start_time);
-
-//       if(current_out_iter >= lazy_update_start_iter - 1){
-//         auto norm_start_time = chrono::system_clock::now();
-
-//         mat * left_transpose_matrix = matrix_new(mkl_left_matrix->ncols, mkl_left_matrix->nrows);
-
-//         matrix_build_transpose(left_transpose_matrix, mkl_left_matrix);
-
-//         mat * final_matrix_shape_for_frobenius = matrix_new(mkl_result_mat->nrows, left_transpose_matrix->ncols);
-
-//         matrix_matrix_mult(mkl_result_mat, left_transpose_matrix, final_matrix_shape_for_frobenius);
-
-//         matrix_delete(left_transpose_matrix);
-
-//         left_transpose_matrix = NULL;
-
-//         for (int k=0; k<ppr_matrix_temp.outerSize(); ++k){
-//             for (SparseMatrix<double, RowMajor, int>::InnerIterator it(ppr_matrix_temp, k); it; ++it){
-//                 double value1 = it.value();
-//                 double XY_value = matrix_get_element(final_matrix_shape_for_frobenius, it.col(), it.row());
-//                 matrix_set_element(final_matrix_shape_for_frobenius, it.col(), it.row(), XY_value - value1);
-//             }
-//         }
-
-//         subset_tree->norm_B_Bid_difference_vec[iter] = get_matrix_frobenius_norm(final_matrix_shape_for_frobenius);
-
-//         matrix_delete(final_matrix_shape_for_frobenius);
-        
-//         final_matrix_shape_for_frobenius = NULL;
-
-//         auto norm_end_time = chrono::system_clock::now();
-//         auto elapsed_norm_time = chrono::duration_cast<std::chrono::seconds>(norm_end_time - norm_start_time);
-//         total_norm_time += elapsed_norm_time.count();
-//       }
-
-//       ppr_matrix_temp.resize(0, 0);
-
-//       ppr_matrix_temp.data().squeeze();
-
-//       matrix_delete(mkl_result_mat);
-//       mkl_result_mat = NULL;
-
-//       csr_matrix_delete(ppr_matrix);
-//       ppr_matrix = NULL;
-//     }
-//     cout<<"right_unique_update_times = "<<unique_update_times<<endl;
-
-//     auto total_right_matrix_end_time = chrono::system_clock::now();
-//     auto total_elapsed_right_matrix_time = chrono::duration_cast<std::chrono::seconds>(total_right_matrix_end_time - total_right_matrix_start_time);
-//     cout << "Total right matrix cost time: "<< total_elapsed_right_matrix_time.count() << endl;
-
-//     cout << "Total norm cost time = "<< total_norm_time << endl;
-
-// }
 
 
 
@@ -565,35 +332,7 @@ int main(int argc,  char **argv){
   cout << "dynamic_ppr_start_iter: "<<dynamic_ppr_start_iter<<", lazy_update_start_iter: "<<lazy_update_start_iter<<endl;
   cout << "delta: "<<delta<<endl;
   
-  // string LabelPath = "LABEL/" + queryname + ".txt";
-
-
-  // ifstream infile2(LabelPath.c_str());
-  // vector<int> labeled_node_vec;
-
-  // unordered_map<int, int> row_index_mapping;
   
-  // int d = 128;
-
-  // int count_labeled_node = 0;
-  // string s1;
-  // while(getline(infile2, s1)) 
-  // { 
-  //   std::size_t found_position = s1.find(" ");
-  //   assert( found_position!=std::string::npos );
-  //   string num_str = s1.substr(0, found_position);
-  //   int node_number;
-  //   node_number = atoi(num_str.c_str());
-  //   indicator[node_number] = 0;
-  //   labeled_node_vec.push_back(node_number);
-  //   row_index_mapping[node_number] = count_labeled_node;
-
-  //   count_labeled_node++;
-  // }
-
-  // cout<<"count_labeled_node = "<<count_labeled_node<<endl;
-
-
 
 
   string config_path =  "DY_Dataset/" + queryname + "/config.txt";
@@ -692,36 +431,9 @@ int main(int argc,  char **argv){
     }
   }
 
-  // int row_dim = count_labeled_node;
-
-  // int number_of_d_row_tree = count_labeled_node / row_dim;
-
-  // vector<d_row_tree_mkl*> d_row_tree_vec;
-
-  // d_row_tree_vec.resize(number_of_d_row_tree);
 
 
-  // for(int i = 0; i < number_of_d_row_tree; i++){
-  //   if(i != number_of_d_row_tree - 1){
-  //     d_row_tree_vec[i] = new d_row_tree_mkl(row_dim, d, nParts, hierarchy_n, vec_mapping, i*row_dim, (i+1)*row_dim);
-  //   }
-  //   else{
-  //     d_row_tree_vec[i] = new d_row_tree_mkl(row_dim + count_labeled_node % row_dim, d, nParts, hierarchy_n, vec_mapping,
-  //     i*row_dim, (i+1)*row_dim + count_labeled_node % row_dim);      
-  //   }
-  // }
 
-  
-  // vector<vector<int>> update_mat_record;
-
-  // update_mat_record.resize(number_of_d_row_tree);
-
-  // for(int i = 0; i < update_mat_record.size(); i++){
-  //   update_mat_record[i].resize(nParts);
-  //   for(int j = 0; j < update_mat_record[i].size(); j++){
-  //     update_mat_record[i][j] = 1;
-  //   }
-  // }
 
   d_row_tree_mkl* subset_tree;
 
@@ -777,18 +489,6 @@ int main(int argc,  char **argv){
   }
 
 
-
-
-    // for(int i = 0; i < count_labeled_node; i++){
-    //   queue_list[i] = Queue
-    //   {
-    //     (int*)malloc( sizeof(int) * (INT_MAX - 1) ),
-    //     (INT_MAX - 1),
-    //     0,
-    //     0
-    //   };
-    // }
-
   mat* U_cur_iter;
 
   U_cur_iter = matrix_new(count_labeled_node, d);
@@ -811,12 +511,6 @@ int main(int argc,  char **argv){
     vector<pair<int, int>> edge_vec;
     cout<<"shots_address_vec[iter] = "<<shots_address_vec[iter]<<endl;
     g->inputDynamicGraph(shots_address_vec[iter].c_str(), edge_vec);
-
-
-
-    // if(iter != snapshots_number - 1){
-    //   continue;
-    // }
 
 
     if(lazy_update_start_iter != 100 && iter < lazy_update_start_iter - 1){
@@ -906,32 +600,20 @@ int main(int argc,  char **argv){
     vector<thread>().swap(threads);
 
 
-
-
-
-
-
     auto start_ppr_matrix_time = chrono::system_clock::now();
     auto elapsed_ppr_time = chrono::duration_cast<std::chrono::seconds>(start_ppr_matrix_time - ppr_start_time);
     cout<< "Iter = "<<iter << ", computing ppr time: "<< elapsed_ppr_time.count() << endl;
 
-// cout<<0<<endl;
 
     if(iter >= lazy_update_start_iter){
 
-// cout<<10<<endl;
-
         vector<thread> threads_top_list;
-        // for(int k = 0; k < number_of_d_row_tree; k++){
-        for(int i = 0; i < vec_mapping.size(); i++){
-            // SparseMatrix<double, 0, int> &current_sparse_mat_mapping = subset_tree->mat_mapping[i];
-    
+
+        for(int i = 0; i < vec_mapping.size(); i++){    
 
             threads_top_list.push_back(thread(Log_sparse_matrix_entries_with_norm_computation, 
-            // k,
             i,    
             reservemin, 
-            // std::ref(d_row_tree_vec),
             subset_tree,
             std::ref(vec_mapping),
             std::ref(update_mat_record),
@@ -959,19 +641,15 @@ int main(int argc,  char **argv){
     }
     else{
 
-
         vector<thread> threads_top_list;
-        // for(int k = 0; k < number_of_d_row_tree; k++){
+
         for(int i = 0; i < vec_mapping.size(); i++){
-            // SparseMatrix<double, 0, int> &current_sparse_mat_mapping = subset_tree->mat_mapping[i];
     
             update_mat_record[i] = iter;
 
             threads_top_list.push_back(thread(Log_sparse_matrix_entries, 
-            // k, 
             i,    
             reservemin, 
-            // std::ref(d_row_tree_vec),
             subset_tree,
             std::ref(vec_mapping),
             std::ref(record_submatrices_nnz)
@@ -1093,7 +771,6 @@ int main(int argc,  char **argv){
 
         matrix_matrix_mult(U, SS, U_cur_iter);
 
-        // matrix_copy(U_without_S, U);
 
         matrix_delete(U);
 
@@ -1144,7 +821,6 @@ int main(int argc,  char **argv){
         }
 
         dense_sub_svd_function( d, pass, 
-        // update_i, 
           subset_tree->near_n_matrix_vec[*it], 
           subset_tree->hierarchy_matrix_vec[*it] );
 
@@ -1172,7 +848,6 @@ int main(int argc,  char **argv){
       record_next_level = temp_record_next_level;
 
     }
-    // }
     
     cout<<"Writing back embedding for the "<<iter<<" round"<<endl;
 
@@ -1217,7 +892,7 @@ int main(int argc,  char **argv){
     residue_order = 10;
   }
   else{
-    cout<<"WRONG!"<<endl;
+    cout<<"Other!"<<endl;
   }
 
   string outUfile = EBpath + queryname + std::to_string(delta) + "_" + std::to_string(residue_order) + "_" + std::to_string(nParts) + "_" + std::to_string(hierarchy_n) + "_" + "De_svd_u_Dppr_parallel_bound_nodegree_U.csv";

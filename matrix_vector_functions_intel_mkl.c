@@ -1190,6 +1190,7 @@ void QR_factorization_getQ(mat *M, mat *Q){
 //     // printf("k4\n");
     
 // }
+
 void QR_factorization_getQ_inplace(mat *Q) {
     
     
@@ -1212,12 +1213,7 @@ void QR_factorization_getQ_inplace(mat *Q) {
     //         matrix_set_element(Q, i, j, matrix_get_element(Q, i, j));
     //     }
     // }
-/* 
-BUG DETECTED! the dgeqrf call raises segmentation fault occasionally.
-the arguments passed to it seems to be fine. probably it's due to bug 
-internal to MKL.
-To reproduce the bug: call qr_bug_reproduce() in main.c 
-*/ 
+
     // printf("k2 m=%d,n=%d,size=%d,tau=%d\n", m, n, sizeof(Q->d), k);
     // LAPACKE_dgeqrf(LAPACK_COL_MAJOR, m, n, Q->d, m, tau->d);
     LAPACKE_dgeqpf(LAPACK_COL_MAJOR, m, n, Q->d, m, jpvt, tau->d);
@@ -1688,19 +1684,6 @@ block_set_value(mat* receive_block, int start_row, int start_col, int rows, int 
     }
 }
 
-// void rowwise_mean(mat *A, mat * mean_vector){
-//     int rows = A->nrows;
-//     int cols = A->ncols;
-//     // #pragma omp parallel for
-//     for(j=0; j<cols; j++){
-//         double sum = 0;
-//         for(i=0; i<rows; i++){
-//             sum += matrix_get_element(A, i, j);
-//         }
-//         sum = sum / cols;
-//         matrix_set_element(mean_vector, i, 0, sum);
-//     }
-// }
 
 
 
