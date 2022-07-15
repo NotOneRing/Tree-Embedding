@@ -8,14 +8,15 @@
 - Intel C++ Compiler
 
 ## Preparation
+|Data Set|Millions|N|M|
+|:------|:-----:|------:|------:|
+|[large-wiki-d](https://github.com/zjlxgxz/DynamicPPE)|Yes|6,216,199|177,862,656|
+|[mag-authors-u](https://github.com/zjlxgxz/DynamicPPE)|Yes|5,843,822|123,392,120|
+|[patent-d](https://github.com/zjlxgxz/DynamicPPE)|Yes|2,738,013|13,960,811|
+|[flickr-growth](http://konect.cc/networks/flickr-growth/)|Yes|2,302,925|33,140,017|
+|[youtube-u-growth](http://konect.cc/networks/youtube-u-growth/)|Yes|3,223,589|9,375,374|
+|[sx-stackoverflow](http://konect.cc/networks/sx-stackoverflow/)|Yes|2,601,977|63,497,050|
 
-|Dataset||N|M|
-|:------|:-----:|------:|
-|[large-wiki](https://github.com/zjlxgxz/DynamicPPE)|6,216,199|177,862,656|
-|[mag-authors](https://github.com/zjlxgxz/DynamicPPE)|5,843,822|123,392,120|
-|[patent](https://github.com/zjlxgxz/DynamicPPE)|2,738,013|13,960,811|
-|[flickr-growth](http://konect.cc/networks/flickr-growth/)|2,302,925|33,140,017|
-|[youtube-u-growth](http://konect.cc/networks/youtube-u-growth/)|3,223,589|9,375,374|
 
 
 Place the prepared data [file].txt in the [DY_Dataset] and [DY_LP_Dataset] for the node classification task and the link prediction task, respectively. Note that the first row of data is the number of nodes in the graph and each row are the starting and ending nodes of an edge [outNode] [inNode].
