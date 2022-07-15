@@ -9,8 +9,8 @@
 
 ## Preparation
 
-|Data Set|N|M|
-|:------|:-----:|------:|------:|
+|Dataset||N|M|
+|:------|:-----:|------:|
 |[large-wiki](https://github.com/zjlxgxz/DynamicPPE)|6,216,199|177,862,656|
 |[mag-authors](https://github.com/zjlxgxz/DynamicPPE)|5,843,822|123,392,120|
 |[patent](https://github.com/zjlxgxz/DynamicPPE)|2,738,013|13,960,811|
