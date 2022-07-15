@@ -40,7 +40,7 @@ At the same time, we use "queryname" to refer to a dataset, for example, it shou
 Because directed and undirected graphs are usually processed differently, we often write two type of programs as "u" and "d" to process them, respectively.
 Furthermore, because for NC task, we often need to have labels information as part of the program, programs of NC and LP are usually two files, too.
 
-## Data Processing:
+## Data Preprocessing:
 We create a folder for each dataset as "./DY_Dataset/queryname/" for NC task and as "./DY_LP_Dataset/queryname/" for LP task,
 for example: we create folder "./DY_Dataset/large-wiki/" for dataset "large-wiki" of NC task and create folder "./DY_LP_Dataset/youtube-u-growth/" 
 for dataset "youtube-u-growth" of LP task.
@@ -70,6 +70,9 @@ mkdir ./DY_Dataset/patent
 mkdir ./DY_LP_Dataset/mag-authors
 mkdir ./DY_LP_Dataset/youtube-u-growth
 mkdir ./DY_LP_Dataset/flickr-growth
+
+
+mkdir ./SIGMOD2023
 ```
 
 
@@ -318,7 +321,7 @@ cp DY_LP_Dataset/mag-authors/mag-authors-Neg_LP_Test.txt DY_LP_Dataset/mag-autho
 
 
 
-### Seventh, we run the bash file for experiments.
+## Run the bash file for experiments.
 ```
 nohup bash run.sh
 ```
