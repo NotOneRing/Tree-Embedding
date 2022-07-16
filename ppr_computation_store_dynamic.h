@@ -38,6 +38,9 @@ extern "C"
 #include <atomic>
 
 
+#include"Graph_dynamic.h"
+
+
 using namespace Eigen;
 
 using namespace std;
@@ -104,7 +107,7 @@ class sparse_d_row_tree_mkl{
       vector<int> &v = vec_mapping[i];
       int current_group_size = vec_mapping[i].size();
       mat_mapping[i].resize(row_dim, current_group_size);
-      // dense_mat_mapping[i].resize(row_dim, current_group_size);
+
       norm_B_Bid_difference_vec[i] = 0;
     }
 
@@ -485,18 +488,13 @@ long long int& all_count, double alpha, vector<int>& labeled_node_vec){
   int record_max;
   
   for(int it = start; it < end; it++){
-    // cout<<"******"<<endl;
+
 
     Q.front = 0;
     Q.rear = 0;
 
     int src = labeled_node_vec[it];
 
-    // if(record_Q.rear-record_Q.front > record_max){
-    //   record_max = record_Q.rear-record_Q.front;
-    // }
-
-    // cout<<"record_Q.rear - record_Q.front = "<<record_max<<endl;
 
     while(!isEmpty(&record_Q)){
       int current = get_front(&record_Q);
@@ -513,24 +511,20 @@ long long int& all_count, double alpha, vector<int>& labeled_node_vec){
 
     residue[src] = 1;
     flags[src] = true;
-    // Q.push(src);
-    // cout<<"Enqueue Q1!"<<endl;
+    
     enqueue(&Q, src);
 
 
-    // int front_pointer = 0;
 
     while(!isEmpty(&Q)){
-      // int v = Q.front();
+
       int v = get_front(&Q);
       
-      // int v = Q.arr[front_pointer];
-
 
       if(g->degree[v] == 0){
         flags[v] = false;
         Q.front++;
-        // dequeue(&Q);
+
         continue;
       }
 
@@ -539,7 +533,6 @@ long long int& all_count, double alpha, vector<int>& labeled_node_vec){
           int u = g->AdjList[v][j];
           residue[u] += (1-alpha) * residue[v] / g->degree[v];
           
-          // cout<<"Enqueue record_Q!"<<endl;
           enqueue(&record_Q, u);
 
           if(g->degree[u] == 0){
@@ -547,8 +540,7 @@ long long int& all_count, double alpha, vector<int>& labeled_node_vec){
           }
           
           if(residue[u] / g->degree[u] > residuemax && !flags[u]){
-            // Q.push(u);
-            // cout<<"Enqueue Q2!"<<endl;
+            
             enqueue(&Q, u);
             flags[u] = true;
           }
@@ -558,9 +550,7 @@ long long int& all_count, double alpha, vector<int>& labeled_node_vec){
       }
       
       flags[v] = false;
-      // Q.pop();
 
-      // dequeue(&Q);
       Q.front++;
     }
 
@@ -1271,19 +1261,14 @@ vector<int>& labeled_node_vec,
 float** residue, 
 float** pi,
 
-// vector<vector<column_tuple*>> &pi_transpose_storepush,
-
 bool** flags, 
 Queue* queue_list,
 
 unordered_map<int, int> &row_index_mapping,
-// int row_dim,
 
 int col_dim,
-// int number_of_d_row_tree,
-int nParts,
 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+int nParts,
 d_row_tree_mkl* subset_tree,
 vector<int> &inner_group_mapping,
 vector<int> &indicator
@@ -1302,23 +1287,16 @@ vector<int> &indicator
 
       int v = get_front(&queue_list[it]);
 
-      // if(g->degree[v] == 0){
-      //   flags[it][v] = false;
-      //   queue_list[it].front++;
 
-      //   continue;
-      // }
       if(g->degree[v] == 0){
         flags[it][v] = false;
 
-        //处理dead end
+
         pi[it][v] = alpha * residue[it][v];
 
         queue_list[it].front++;
 
-        // cout<<"Forward degree[v] == 0"<<endl;
 
-        // dequeue(&Q);
         continue;
       }
 
@@ -1328,11 +1306,9 @@ vector<int> &indicator
           int u = g->AdjList[v][j];
           residue[it][u] += (1-alpha) * residue[it][v] / g->degree[v];
 
-          // if(g->degree[u] == 0){
-          //   continue;
-          // }
+
           if(g->degree[u] == 0){
-            // cout<<"Forward degree[u] == 0"<<endl;
+
             pi[it][u] += alpha * residue[it][v];
             residue[it][src] += (1-alpha) * residue[it][v];
             continue;
@@ -1346,24 +1322,15 @@ vector<int> &indicator
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // if(indicator[v] == 0){
-        //     column_tuple * temp_tuple = new column_tuple(row_index_mapping[v], alpha * residue[it][v]);
-        //     pi_transpose_storepush[it].push_back(temp_tuple);
-        // }
 
-        // int row_v = it / row_dim;
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // (d_row_tree_vec[row_v])->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
 
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
@@ -1409,19 +1376,18 @@ vector<int>& labeled_node_vec,
 float** residue, 
 float** pi,
 
-// vector<vector<column_tuple*>> &pi_transpose_storepush,
 
 bool** flags, 
 Queue* queue_list,
 
 unordered_map<int, int> &row_index_mapping,
-// int row_dim,
+
 
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 vector<int> &inner_group_mapping,
 vector<int> &indicator
@@ -1440,44 +1406,35 @@ vector<int> &indicator
 
       int v = get_front(&queue_list[it]);
 
-      // if(g->degree[v] == 0){
-      //   flags[it][v] = false;
-      //   queue_list[it].front++;
 
-      //   continue;
-      // }
       if(g->degree[v] == 0){
         flags[it][v] = false;
 
-        //处理dead end
+
         pi[it][v] = alpha * residue[it][v];
 
         queue_list[it].front++;
 
-        // cout<<"Forward degree[v] == 0"<<endl;
 
-        // dequeue(&Q);
         continue;
       }
 
 
-      // if(residue[it][v] / g->degree[v] > residuemax){
+
       if(residue[it][v] > residuemax){
         for(int j = 0; j < g->degree[v]; j++){
           int u = g->AdjList[v][j];
           residue[it][u] += (1-alpha) * residue[it][v] / g->degree[v];
 
-          // if(g->degree[u] == 0){
-          //   continue;
-          // }
+
           if(g->degree[u] == 0){
-            // cout<<"Forward degree[u] == 0"<<endl;
+
             pi[it][u] += alpha * residue[it][v];
             residue[it][src] += (1-alpha) * residue[it][v];
             continue;
           }
           
-          // if(residue[it][u] / g->degree[u] > residuemax && !flags[it][u]){
+
           if(residue[it][u] > residuemax && !flags[it][u]){
             enqueue(&queue_list[it], u);
             flags[it][u] = true;
@@ -1486,24 +1443,17 @@ vector<int> &indicator
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // if(indicator[v] == 0){
-        //     column_tuple * temp_tuple = new column_tuple(row_index_mapping[v], alpha * residue[it][v]);
-        //     pi_transpose_storepush[it].push_back(temp_tuple);
-        // }
 
-        // int row_v = it / row_dim;
+
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // (d_row_tree_vec[row_v])->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
 
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
@@ -1559,19 +1509,14 @@ vector<int>& labeled_node_vec,
 double** residue, 
 double** pi,
 
-// vector<vector<column_tuple*>> &pi_transpose_storepush,
-
 bool** flags, 
 Queue* queue_list,
 
 unordered_map<int, int> &row_index_mapping,
-// int row_dim,
 
 int col_dim,
-// int number_of_d_row_tree,
 int nParts,
 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
 d_row_tree_mkl* subset_tree,
 vector<int> &inner_group_mapping,
 vector<int> &indicator
@@ -1590,44 +1535,33 @@ vector<int> &indicator
 
       int v = get_front(&queue_list[it]);
 
-      // if(g->degree[v] == 0){
-      //   flags[it][v] = false;
-      //   queue_list[it].front++;
 
-      //   continue;
-      // }
       if(g->degree[v] == 0){
         flags[it][v] = false;
 
-        //处理dead end
+
         pi[it][v] = alpha * residue[it][v];
 
         queue_list[it].front++;
 
-        // cout<<"Forward degree[v] == 0"<<endl;
-
-        // dequeue(&Q);
         continue;
       }
 
 
-      // if(residue[it][v] / g->degree[v] > residuemax){
       if(residue[it][v] > residuemax){
         for(int j = 0; j < g->degree[v]; j++){
           int u = g->AdjList[v][j];
           residue[it][u] += (1-alpha) * residue[it][v] / g->degree[v];
 
-          // if(g->degree[u] == 0){
-          //   continue;
-          // }
+
           if(g->degree[u] == 0){
-            // cout<<"Forward degree[u] == 0"<<endl;
+
             pi[it][u] += alpha * residue[it][v];
             residue[it][src] += (1-alpha) * residue[it][v];
             continue;
           }
           
-          // if(residue[it][u] / g->degree[u] > residuemax && !flags[it][u]){
+
           if(residue[it][u] > residuemax && !flags[it][u]){
             enqueue(&queue_list[it], u);
             flags[it][u] = true;
@@ -1636,24 +1570,15 @@ vector<int> &indicator
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // if(indicator[v] == 0){
-        //     column_tuple * temp_tuple = new column_tuple(row_index_mapping[v], alpha * residue[it][v]);
-        //     pi_transpose_storepush[it].push_back(temp_tuple);
-        // }
 
-        // int row_v = it / row_dim;
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // (d_row_tree_vec[row_v])->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
 
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
@@ -1720,19 +1645,14 @@ vector<int>& labeled_node_vec,
 double** residue, 
 double** pi,
 
-// vector<vector<column_tuple*>> &pi_transpose_storepush,
-
 bool** flags, 
 Queue* queue_list,
 
 unordered_map<int, int> &row_index_mapping,
-// int row_dim,
 
 int col_dim,
-// int number_of_d_row_tree,
 int nParts,
 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
 d_row_tree_mkl* subset_tree,
 vector<int> &inner_group_mapping,
 vector<int> &indicator
@@ -1751,23 +1671,15 @@ vector<int> &indicator
 
       int v = get_front(&queue_list[it]);
 
-      // if(g->degree[v] == 0){
-      //   flags[it][v] = false;
-      //   queue_list[it].front++;
 
-      //   continue;
-      // }
       if(g->degree[v] == 0){
         flags[it][v] = false;
 
-        //处理dead end
         pi[it][v] = alpha * residue[it][v];
 
         queue_list[it].front++;
 
-        // cout<<"Forward degree[v] == 0"<<endl;
 
-        // dequeue(&Q);
         continue;
       }
 
@@ -1777,11 +1689,9 @@ vector<int> &indicator
           int u = g->AdjList[v][j];
           residue[it][u] += (1-alpha) * residue[it][v] / g->degree[v];
 
-          // if(g->degree[u] == 0){
-          //   continue;
-          // }
+
           if(g->degree[u] == 0){
-            // cout<<"Forward degree[u] == 0"<<endl;
+
             pi[it][u] += alpha * residue[it][v];
             residue[it][src] += (1-alpha) * residue[it][v];
             continue;
@@ -1795,24 +1705,15 @@ vector<int> &indicator
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // if(indicator[v] == 0){
-        //     column_tuple * temp_tuple = new column_tuple(row_index_mapping[v], alpha * residue[it][v]);
-        //     pi_transpose_storepush[it].push_back(temp_tuple);
-        // }
 
-        // int row_v = it / row_dim;
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // (d_row_tree_vec[row_v])->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
 
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
@@ -2227,16 +2128,12 @@ bool** flags,
 Queue* queue_list,
 int iter,
 int vertex_number,
-
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
-// vector<vector<column_tuple*>>& pi_transpose_storepush,
 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
 d_row_tree_mkl* subset_tree,
 
 unordered_map<int, int> &row_index_mapping,
@@ -2268,7 +2165,7 @@ int dynamic_ppr_start_iter
 
             if(j == 0){
               continue;
-            // if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
+
             if(residue[k][from_node] > residuemax && !flags[k][from_node]){
                 enqueue(&queue_list[k], from_node);
                 flags[k][from_node] = true;
@@ -2277,11 +2174,9 @@ int dynamic_ppr_start_iter
             }
 
             
-            // int row_v = k / row_dim;
+
             int col_v = from_node / col_dim;
-            // if(row_v == number_of_d_row_tree){
-            // row_v--;
-            // }
+            
             if(col_v == nParts){
             col_v--;
             }
@@ -2292,22 +2187,18 @@ int dynamic_ppr_start_iter
             subset_tree->dense_mat_mapping[col_v](
             k, inner_col_index) += pi[k][from_node] * 1 / j;
 
-            // if(indicator[from_node] == 0){
-            //     column_tuple * temp_tuple = new column_tuple(row_index_mapping[from_node], pi[k][from_node] * 1 / j);
-            //     pi_transpose_storepush[k].push_back(temp_tuple);
-            // }
 
 
             pi[k][from_node] *= (j + 1) / j;
 
             residue[k][from_node] -= pi[k][from_node] / (j+1) / alpha;
             residue[k][to_node] += (1 - alpha) * pi[k][from_node] / (j+1) / alpha;
-            // if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
+
             if(residue[k][from_node] > residuemax && !flags[k][from_node]){
             enqueue(&queue_list[k], from_node);
             flags[k][from_node] = true;
             }
-            // if(residue[k][to_node] / j > residuemax && !flags[k][to_node]){
+
             if(residue[k][to_node] > residuemax && !flags[k][to_node]){
             enqueue(&queue_list[k], to_node);
             flags[k][to_node] = true;
@@ -2346,15 +2237,12 @@ Queue* queue_list,
 int iter,
 int vertex_number,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
-// vector<vector<column_tuple*>>& pi_transpose_storepush,
 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
 d_row_tree_mkl* subset_tree,
 
 unordered_map<int, int> &row_index_mapping,
@@ -2394,11 +2282,9 @@ int dynamic_ppr_start_iter
             }
 
             
-            // int row_v = k / row_dim;
+
             int col_v = from_node / col_dim;
-            // if(row_v == number_of_d_row_tree){
-            // row_v--;
-            // }
+            
             if(col_v == nParts){
             col_v--;
             }
@@ -2409,10 +2295,6 @@ int dynamic_ppr_start_iter
             subset_tree->dense_mat_mapping[col_v](
             k, inner_col_index) += pi[k][from_node] * 1 / j;
 
-            // if(indicator[from_node] == 0){
-            //     column_tuple * temp_tuple = new column_tuple(row_index_mapping[from_node], pi[k][from_node] * 1 / j);
-            //     pi_transpose_storepush[k].push_back(temp_tuple);
-            // }
 
 
             pi[k][from_node] *= (j + 1) / j;
@@ -2442,110 +2324,6 @@ int dynamic_ppr_start_iter
 
 
 
-
-
-
-
-
-
-
-// void DenseUndirected_Refresh_PPR_initialization_LP(int start, int end, UGraph* g, double residuemax, 
-// double alpha, vector<int>& labeled_node_vec, 
-// float** residue, 
-// float** pi,
-// bool** flags, 
-// Queue* queue_list,
-// int iter,
-// int vertex_number,
-
-// int row_dim,
-// int col_dim,
-// int number_of_d_row_tree,
-// int nParts,
-// vector<int> &inner_group_mapping,
-
-// vector<vector<column_tuple*>>& pi_transpose_storepush,
-
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
-
-// unordered_map<int, int> &row_index_mapping,
-// vector<int> &indicator,
-// vector<MatrixXd> & transpose_trMat_vec,
-// int dynamic_ppr_start_iter
-// ){
-
-//     if(iter < dynamic_ppr_start_iter){
-//       for(int i = start; i < end; i++){
-//         memset(residue[i], 0, sizeof(float) * vertex_number);
-//         memset(pi[i], 0, sizeof(float) * vertex_number);
-//         memset(flags[i], false, sizeof(bool) * vertex_number);
-
-//         queue_list[i].front = 0;
-//         queue_list[i].rear = 0;
-
-//         int src = labeled_node_vec[i];
-//         residue[i][src] = 1;
-//         flags[i][src] = true;
-//         enqueue(&queue_list[i], src);
-//       }
-//     }
-//     else{
-
-//     for(int i = 0; i < vertex_number; i++){
-//         int from_node = i;
-//         for(int j = g->former_degree[from_node]; j < g->degree[from_node]; j++){
-//         int to_node = g->AdjList[from_node][j];
-//         for(int k = start; k < end; k++){
-
-//             if(j == 0){
-//               continue;
-//             if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
-//                 enqueue(&queue_list[k], from_node);
-//                 flags[k][from_node] = true;
-//             }
-
-//             }
-
-            
-//             int row_v = k / row_dim;
-//             int col_v = from_node / col_dim;
-//             if(row_v == number_of_d_row_tree){
-//             row_v--;
-//             }
-//             if(col_v == nParts){
-//             col_v--;
-//             }
-
-//             int inner_col_index = inner_group_mapping[from_node];
-
-//             d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-//             k - row_v * row_dim, inner_col_index) += pi[k][from_node] * 1 / j;
-
-//             if(indicator[from_node] == 0){
-//                 column_tuple * temp_tuple = new column_tuple(row_index_mapping[from_node], pi[k][from_node] * 1 / j);
-//                 pi_transpose_storepush[k].push_back(temp_tuple);
-//             }
-
-//             transpose_trMat_vec[row_v](from_node, k) += pi[k][from_node] * 1 / j;
-
-//             pi[k][from_node] *= (j + 1) / j;
-
-//             residue[k][from_node] -= pi[k][from_node] / (j+1) / alpha;
-//             residue[k][to_node] += (1 - alpha) * pi[k][from_node] / (j+1) / alpha;
-//             if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
-//             enqueue(&queue_list[k], from_node);
-//             flags[k][from_node] = true;
-//             }
-//             if(residue[k][to_node] / j > residuemax && !flags[k][to_node]){
-//             enqueue(&queue_list[k], to_node);
-//             flags[k][to_node] = true;
-//             }
-//         }
-//         }
-//     }
-//     }
-
-// }
 
 
 
@@ -2688,42 +2466,31 @@ vector<sparse_d_row_tree_mkl*> &d_row_tree_vec,
 unordered_map<int, vector<int>> &vec_mapping,
 SparseMatrix<double, 0, int64_t> &subset_trMat
 ){
-  // cout<<1<<endl;
+
     SparseMatrix<double, 0, int64_t> &current_mat_mapping = d_row_tree_vec[k]->mat_mapping[i];
-  // cout<<2<<endl;
+
 
     current_mat_mapping.resize(0, 0);
 
-  // cout<<3<<endl;
+
     int temp_row_dim = d_row_tree_vec[k]->row_dim;
     int current_group_size = vec_mapping[i].size();
     current_mat_mapping.resize(subset_trMat.rows(), current_group_size);
-    // current_mat_mapping = d_row_tree_vec[k]->dense_mat_mapping[i].sparseView();
-  // cout<<4<<endl;
+
+
 
     if(i != vec_mapping.size() - 1){
       int start_col_index = i * vec_mapping[i].size();
       current_mat_mapping = sparseBlock(subset_trMat, 0, start_col_index, subset_trMat.rows(),  vec_mapping[i].size());
-  // cout<<5<<endl;
+
     }
     else{
       int start_col_index = i * vec_mapping[i-1].size();
       current_mat_mapping = sparseBlock(subset_trMat, 0, start_col_index, subset_trMat.rows(),  vec_mapping[i].size());
-  // cout<<6<<endl;
+
     }
 
-  //   for (int k_iter=0; k_iter<d_row_tree_vec[k]->mat_mapping[i].outerSize(); ++k_iter){
-  //       for (SparseMatrix<double, ColMajor, int64_t>::InnerIterator it(d_row_tree_vec[k]->mat_mapping[i], k_iter); it; ++it){
-  //           if(it.value() > reservemin){
-  //               it.valueRef() = log10(it.value()/reservemin);
-  // cout<<7<<endl;
-  //           }
-  //           else{
-  //               it.valueRef() = 0;
-  // cout<<8<<endl;
-  //           }
-  //       }
-  //   }
+
 
 }
 
@@ -2738,10 +2505,9 @@ SparseMatrix<double, 0, int64_t> &subset_trMat
 
 
 void Log_sparse_matrix_entries(
-// int k, 
 int i,    
 double reservemin, 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 unordered_map<int, vector<int>> &vec_mapping,
 vector<long long int>& record_submatrices_nnz
@@ -2767,7 +2533,7 @@ vector<long long int>& record_submatrices_nnz
             else{
                 it.valueRef() = 0;
             }
-            // it.valueRef() = log10(it.value()/reservemin);
+
 
         }
     }
@@ -2780,10 +2546,9 @@ vector<long long int>& record_submatrices_nnz
 
 
 void No_Log_sparse_matrix_entries_LP(
-// int k, 
 int i,    
 double reservemin, 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 unordered_map<int, vector<int>> &vec_mapping,
 vector<long long int>& record_submatrices_nnz
@@ -2799,14 +2564,7 @@ vector<long long int>& record_submatrices_nnz
     current_mat_mapping = subset_tree->dense_mat_mapping[i].sparseView();
     for (int k_iter=0; k_iter<subset_tree->mat_mapping[i].outerSize(); ++k_iter){
         for (SparseMatrix<double, ColMajor, int>::InnerIterator it(subset_tree->mat_mapping[i], k_iter); it; ++it){
-            // if(it.value() > reservemin){
-            //     it.valueRef() = log10(it.value()/reservemin);
-            //     record_submatrices_nnz[i]++;
-            // }
-            // else{
-            //     it.valueRef() = 0;
-            // }
-            // it.valueRef() = log10(it.value()/reservemin);
+
             it.valueRef() = it.value();
             record_submatrices_nnz[i]++;
 
@@ -2818,10 +2576,8 @@ vector<long long int>& record_submatrices_nnz
 
 
 void Log_sparse_matrix_entries_LP(
-// int k, 
 int i,    
 double reservemin, 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
 d_row_tree_mkl* subset_tree,
 unordered_map<int, vector<int>> &vec_mapping,
 vector<long long int>& record_submatrices_nnz
@@ -2850,12 +2606,11 @@ vector<long long int>& record_submatrices_nnz
                 record_submatrices_nnz[i]++;
             }
             else{
-                // it.valueRef() = 0;
+
                 it.valueRef() = log10(1 + it.value()/reservemin);
                 record_submatrices_nnz[i]++;
             }
-            // it.valueRef() = log10(it.value()/reservemin);
-            // record_submatrices_nnz[i]++;
+            
 
         }
     }
@@ -2875,10 +2630,10 @@ void Log_sparse_matrix_entries_with_norm_computation(
 // int k, 
 int i,    
 double reservemin, 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 unordered_map<int, vector<int>> &vec_mapping,
-// vector<vector<int>>& update_mat_record,
+
 vector<int>& update_mat_tree_record,
 int iter,
 double delta,
@@ -2886,24 +2641,19 @@ int count_labeled_node,
 int d,
 vector<long long int>& record_submatrices_nnz
 ){
-
-// cout<<1<<endl;
     
     SparseMatrix<double, 0, int> &old_mat_mapping = subset_tree->mat_mapping[i];
 
     int temp_row_dim = subset_tree->row_dim;
     int current_group_size = vec_mapping[i].size();
 
-// cout<<2<<endl;
 
     SparseMatrix<double, 0, int> current_mat_mapping;
 
-// cout<<3<<endl;
 
     current_mat_mapping.resize(temp_row_dim, current_group_size);
     current_mat_mapping = subset_tree->dense_mat_mapping[i].sparseView();
 
-// cout<<4<<endl;
 
     long long int temp_record_submatrices_nnz = 0;
 
@@ -2911,7 +2661,7 @@ vector<long long int>& record_submatrices_nnz
         for (SparseMatrix<double, ColMajor, int>::InnerIterator it(current_mat_mapping, k_iter); it; ++it){
             if(it.value() > reservemin){
                 it.valueRef() = log10(it.value()/reservemin);
-                // record_submatrices_nnz[i]++;
+
                 temp_record_submatrices_nnz++;
             }
             else if(it.value() == 0){
@@ -2920,30 +2670,29 @@ vector<long long int>& record_submatrices_nnz
             else{
                 it.valueRef() = 0;
             }
-          // it.valueRef() = log10(it.value()/reservemin);
+
         }
     }
 
-// cout<<5<<endl;
+
 
     double A_norm = current_mat_mapping.norm();
 
-// cout<<6<<endl;
+
 
     double Ei_norm = (current_mat_mapping - old_mat_mapping).norm();
 
-// cout<<7<<endl;
+
 
     delta = delta * sqrt(2);
 
-// cout<<8<<endl;
+
 
     if( subset_tree->norm_B_Bid_difference_vec[i] + Ei_norm < delta * A_norm){
       update_mat_tree_record[i] = -1;
       current_mat_mapping.resize(0, 0);
       current_mat_mapping.data().squeeze();
 
-// cout<<9<<endl;
 
     }
     else{
@@ -2953,7 +2702,7 @@ vector<long long int>& record_submatrices_nnz
       subset_tree->mat_mapping[i] = current_mat_mapping;
 
       record_submatrices_nnz[i] = temp_record_submatrices_nnz;
-// cout<<10<<endl;
+
 
     }
 
@@ -2971,13 +2720,12 @@ vector<long long int>& record_submatrices_nnz
 
 
 void Log_sparse_matrix_entries_with_norm_computation_LP(
-// int k, 
 int i,    
 double reservemin, 
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 unordered_map<int, vector<int>> &vec_mapping,
-// vector<vector<int>>& update_mat_record,
+
 vector<int>& update_mat_tree_record,
 int iter,
 double delta,
@@ -2986,23 +2734,21 @@ int d,
 vector<long long int>& record_submatrices_nnz
 ){
 
-// cout<<1<<endl;
+
     
     SparseMatrix<double, 0, int> &old_mat_mapping = subset_tree->mat_mapping[i];
 
     int temp_row_dim = subset_tree->row_dim;
     int current_group_size = vec_mapping[i].size();
 
-// cout<<2<<endl;
+
 
     SparseMatrix<double, 0, int> current_mat_mapping;
 
-// cout<<3<<endl;
 
     current_mat_mapping.resize(temp_row_dim, current_group_size);
     current_mat_mapping = subset_tree->dense_mat_mapping[i].sparseView();
 
-// cout<<4<<endl;
 
     long long int temp_record_submatrices_nnz = 0;
 
@@ -3010,7 +2756,7 @@ vector<long long int>& record_submatrices_nnz
         for (SparseMatrix<double, ColMajor, int>::InnerIterator it(current_mat_mapping, k_iter); it; ++it){
             if(it.value() > reservemin){
                 it.valueRef() = log10(1 + it.value()/reservemin);
-                // record_submatrices_nnz[i]++;
+
                 temp_record_submatrices_nnz++;
             }
             else if(it.value() == 0){
@@ -3020,30 +2766,28 @@ vector<long long int>& record_submatrices_nnz
                 it.valueRef() = log10(1 + it.value()/reservemin);
                 temp_record_submatrices_nnz++;
             }
-          // it.valueRef() = log10(it.value()/reservemin);
+
         }
     }
 
-// cout<<5<<endl;
+
 
     double A_norm = current_mat_mapping.norm();
 
-// cout<<6<<endl;
+
 
     double Ei_norm = (current_mat_mapping - old_mat_mapping).norm();
 
-// cout<<7<<endl;
+
 
     delta = delta * sqrt(2);
 
-// cout<<8<<endl;
+
 
     if( subset_tree->norm_B_Bid_difference_vec[i] + Ei_norm < delta * A_norm){
       update_mat_tree_record[i] = -1;
       current_mat_mapping.resize(0, 0);
       current_mat_mapping.data().squeeze();
-
-// cout<<9<<endl;
 
     }
     else{
@@ -3053,7 +2797,6 @@ vector<long long int>& record_submatrices_nnz
       subset_tree->mat_mapping[i] = current_mat_mapping;
 
       record_submatrices_nnz[i] = temp_record_submatrices_nnz;
-// cout<<10<<endl;
 
     }
 
@@ -3088,12 +2831,12 @@ float** residue,
 float** pi,
 bool** flags, 
 Queue* queue_list,
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
-// vector<d_row_tree_mkl*> &d_row_tree_vec
+
 d_row_tree_mkl * subset_tree
 )
 {
@@ -3111,7 +2854,7 @@ d_row_tree_mkl * subset_tree
       if(g->outdegree[v] == 0){
         flags[it][v] = false;
         queue_list[it].front++;
-        // cout<<"Forward outdegree[v] == 0"<<endl;
+
         continue;
       }
 
@@ -3123,7 +2866,6 @@ d_row_tree_mkl * subset_tree
           residue[it][u] += (1-alpha) * residue[it][v] / g->outdegree[v];
           
           if(g->outdegree[u] == 0){
-            // cout<<"Forward outdegree[u] == 0"<<endl;
             continue;
           }
           
@@ -3134,19 +2876,16 @@ d_row_tree_mkl * subset_tree
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // int row_v = it / row_dim;
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+
+
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
 
@@ -3189,12 +2928,12 @@ float** residue,
 float** pi,
 bool** flags, 
 Queue* queue_list,
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
-// vector<d_row_tree_mkl*> &d_row_tree_vec
+
 d_row_tree_mkl * subset_tree
 )
 {
@@ -3212,24 +2951,24 @@ d_row_tree_mkl * subset_tree
       if(g->outdegree[v] == 0){
         flags[it][v] = false;
         queue_list[it].front++;
-        // cout<<"Forward outdegree[v] == 0"<<endl;
+
         continue;
       }
 
 
 
-      // if(residue[it][v] / g->outdegree[v] > residuemax){
+
       if(residue[it][v] > residuemax){
         for(int j = 0; j < g->outdegree[v]; j++){
           int u = g->outAdjList[v][j];
           residue[it][u] += (1-alpha) * residue[it][v] / g->outdegree[v];
           
           if(g->outdegree[u] == 0){
-            // cout<<"Forward outdegree[u] == 0"<<endl;
+
             continue;
           }
           
-          // if(residue[it][u] / g->outdegree[u] > residuemax && !flags[it][u]){
+
           if(residue[it][u] > residuemax && !flags[it][u]){
             enqueue(&queue_list[it], u);
             flags[it][u] = true;
@@ -3237,19 +2976,17 @@ d_row_tree_mkl * subset_tree
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+
+
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
 
@@ -3291,12 +3028,12 @@ double** residue,
 double** pi,
 bool** flags, 
 Queue* queue_list,
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
-// vector<d_row_tree_mkl*> &d_row_tree_vec
+
 d_row_tree_mkl * subset_tree
 )
 {
@@ -3314,24 +3051,24 @@ d_row_tree_mkl * subset_tree
       if(g->outdegree[v] == 0){
         flags[it][v] = false;
         queue_list[it].front++;
-        // cout<<"Forward outdegree[v] == 0"<<endl;
+
         continue;
       }
 
 
 
-      // if(residue[it][v] / g->outdegree[v] > residuemax){
+
       if(residue[it][v] > residuemax){
         for(int j = 0; j < g->outdegree[v]; j++){
           int u = g->outAdjList[v][j];
           residue[it][u] += (1-alpha) * residue[it][v] / g->outdegree[v];
           
           if(g->outdegree[u] == 0){
-            // cout<<"Forward outdegree[u] == 0"<<endl;
+
             continue;
           }
           
-          // if(residue[it][u] / g->outdegree[u] > residuemax && !flags[it][u]){
+
           if(residue[it][u] > residuemax && !flags[it][u]){
             enqueue(&queue_list[it], u);
             flags[it][u] = true;
@@ -3339,19 +3076,16 @@ d_row_tree_mkl * subset_tree
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
 
@@ -3401,12 +3135,12 @@ double** residue,
 double** pi,
 bool** flags, 
 Queue* queue_list,
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
-// vector<d_row_tree_mkl*> &d_row_tree_vec
+
 d_row_tree_mkl * subset_tree
 )
 {
@@ -3424,7 +3158,7 @@ d_row_tree_mkl * subset_tree
       if(g->outdegree[v] == 0){
         flags[it][v] = false;
         queue_list[it].front++;
-        // cout<<"Forward outdegree[v] == 0"<<endl;
+
         continue;
       }
 
@@ -3436,7 +3170,7 @@ d_row_tree_mkl * subset_tree
           residue[it][u] += (1-alpha) * residue[it][v] / g->outdegree[v];
           
           if(g->outdegree[u] == 0){
-            // cout<<"Forward outdegree[u] == 0"<<endl;
+
             continue;
           }
           
@@ -3447,19 +3181,16 @@ d_row_tree_mkl * subset_tree
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
 
@@ -3493,115 +3224,6 @@ d_row_tree_mkl * subset_tree
 
 
 
-// void DenseDirectedDynamicForwardPush_LP(int start, int end, Graph* g, double residuemax, double reservemin, 
-// double alpha, vector<int>& labeled_node_vec, 
-// float** residue, 
-// float** pi,
-// bool** flags, 
-// Queue* queue_list,
-
-// int row_dim,
-// int col_dim,
-// int number_of_d_row_tree,
-// int nParts,
-// vector<int> &inner_group_mapping,
-
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
-// vector<MatrixXd> & transpose_trMat_vec
-// )
-// {
-
-//   int vertices_number = g->n;  
-
-//   for(int it = start; it < end; it++){
-
-//     int src = labeled_node_vec[it];
-
-//     while(!isEmpty(&queue_list[it])){
-
-//       int v = get_front(&queue_list[it]);
-
-//       if(g->outdegree[v] == 0){
-//         flags[it][v] = false;
-//         queue_list[it].front++;
-
-//         continue;
-//       }
-
-//       if(residue[it][v] / g->outdegree[v] > residuemax){
-//         for(int j = 0; j < g->outdegree[v]; j++){
-//           int u = g->outAdjList[v][j];
-//           residue[it][u] += (1-alpha) * residue[it][v] / g->outdegree[v];
-
-//           if(g->outdegree[u] == 0){
-//             continue;
-//           }
-          
-//           if(residue[it][u] / g->outdegree[u] > residuemax && !flags[it][u]){
-//             enqueue(&queue_list[it], u);
-//             flags[it][u] = true;
-//           }
-//         }
-//         pi[it][v] += alpha * residue[it][v];
-
-//         int row_v = it / row_dim;
-//         int col_v = v / col_dim;
-//         if(row_v == number_of_d_row_tree){
-//           row_v--;
-//         }
-//         if(col_v == nParts){
-//           col_v--;
-//         }
-
-//         transpose_trMat_vec[row_v](v, it) += alpha * residue[it][v];
-
-//         int inner_col_index = inner_group_mapping[v];
-
-//         d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-//           it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
-
-//         residue[it][v] = 0;
-//       }
-      
-//       flags[it][v] = false;
-
-//       queue_list[it].front++;
-//     }
-
-//     queue_list[it].front = 0;
-//     queue_list[it].rear = 0;
-
-
-//   }
-
-//   return;
-
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -3612,13 +3234,12 @@ float** residue,
 float** pi,
 bool** flags, 
 Queue* queue_list,
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 d_row_tree_mkl* subset_tree
-// vector<d_row_tree_mkl*> &d_row_tree_vec
 )
 {
 
@@ -3635,7 +3256,7 @@ d_row_tree_mkl* subset_tree
       if(g->indegree[v] == 0){
         flags[it][v] = false;
         queue_list[it].front++;
-        // cout<<"Forward_Transpose indegree[v] == 0"<<endl;
+
         continue;
       }
 
@@ -3645,7 +3266,7 @@ d_row_tree_mkl* subset_tree
           residue[it][u] += (1-alpha) * residue[it][v] / g->indegree[v];
 
           if(g->indegree[u] == 0){
-            // cout<<"Forward_Transpose indegree[u] == 0"<<endl;
+
             continue;
           }
           
@@ -3656,19 +3277,16 @@ d_row_tree_mkl* subset_tree
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
 
@@ -3721,13 +3339,13 @@ float** residue,
 float** pi,
 bool** flags, 
 Queue* queue_list,
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 d_row_tree_mkl* subset_tree
-// vector<d_row_tree_mkl*> &d_row_tree_vec
+
 )
 {
 
@@ -3744,22 +3362,22 @@ d_row_tree_mkl* subset_tree
       if(g->indegree[v] == 0){
         flags[it][v] = false;
         queue_list[it].front++;
-        // cout<<"Forward_Transpose indegree[v] == 0"<<endl;
+
         continue;
       }
 
-      // if(residue[it][v] / g->indegree[v] > residuemax){
+
       if(residue[it][v] > residuemax){
         for(int j = 0; j < g->indegree[v]; j++){
           int u = g->inAdjList[v][j];
           residue[it][u] += (1-alpha) * residue[it][v] / g->indegree[v];
 
           if(g->indegree[u] == 0){
-            // cout<<"Forward_Transpose indegree[u] == 0"<<endl;
+
             continue;
           }
           
-          // if(residue[it][u] / g->indegree[u] > residuemax && !flags[it][u]){
+
           if(residue[it][u] > residuemax && !flags[it][u]){
             enqueue(&queue_list[it], u);
             flags[it][u] = true;
@@ -3767,19 +3385,16 @@ d_row_tree_mkl* subset_tree
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
 
@@ -3827,13 +3442,13 @@ double** residue,
 double** pi,
 bool** flags, 
 Queue* queue_list,
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 d_row_tree_mkl* subset_tree
-// vector<d_row_tree_mkl*> &d_row_tree_vec
+
 )
 {
 
@@ -3850,22 +3465,22 @@ d_row_tree_mkl* subset_tree
       if(g->indegree[v] == 0){
         flags[it][v] = false;
         queue_list[it].front++;
-        // cout<<"Forward_Transpose indegree[v] == 0"<<endl;
+
         continue;
       }
 
-      // if(residue[it][v] / g->indegree[v] > residuemax){
+
       if(residue[it][v] > residuemax){
         for(int j = 0; j < g->indegree[v]; j++){
           int u = g->inAdjList[v][j];
           residue[it][u] += (1-alpha) * residue[it][v] / g->indegree[v];
 
           if(g->indegree[u] == 0){
-            // cout<<"Forward_Transpose indegree[u] == 0"<<endl;
+
             continue;
           }
           
-          // if(residue[it][u] / g->indegree[u] > residuemax && !flags[it][u]){
+
           if(residue[it][u] > residuemax && !flags[it][u]){
             enqueue(&queue_list[it], u);
             flags[it][u] = true;
@@ -3873,19 +3488,16 @@ d_row_tree_mkl* subset_tree
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
 
@@ -3949,13 +3561,13 @@ double** residue,
 double** pi,
 bool** flags, 
 Queue* queue_list,
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 d_row_tree_mkl* subset_tree
-// vector<d_row_tree_mkl*> &d_row_tree_vec
+
 )
 {
 
@@ -3972,7 +3584,7 @@ d_row_tree_mkl* subset_tree
       if(g->indegree[v] == 0){
         flags[it][v] = false;
         queue_list[it].front++;
-        // cout<<"Forward_Transpose indegree[v] == 0"<<endl;
+
         continue;
       }
 
@@ -3982,7 +3594,7 @@ d_row_tree_mkl* subset_tree
           residue[it][u] += (1-alpha) * residue[it][v] / g->indegree[v];
 
           if(g->indegree[u] == 0){
-            // cout<<"Forward_Transpose indegree[u] == 0"<<endl;
+
             continue;
           }
           
@@ -3993,19 +3605,16 @@ d_row_tree_mkl* subset_tree
         }
         pi[it][v] += alpha * residue[it][v];
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue[it][v];
 
@@ -4045,289 +3654,6 @@ d_row_tree_mkl* subset_tree
 
 
 
-// void DenseDirectedDynamicForwardPushTranspose(int start, int end, Graph* g, double residuemax, double reservemin, 
-// double alpha, vector<int>& labeled_node_vec, 
-// float** residue, 
-// float** pi,
-// bool** flags, 
-// Queue* queue_list,
-// // int row_dim,
-// int col_dim,
-// // int number_of_d_row_tree,
-// int nParts,
-// vector<int> &inner_group_mapping,
-// d_row_tree_mkl* subset_tree
-// // vector<d_row_tree_mkl*> &d_row_tree_vec
-// )
-// {
-
-//   int vertices_number = g->n;  
-
-//   for(int it = start; it < end; it++){
-
-//     int src = labeled_node_vec[it];
-
-//     while(!isEmpty(&queue_list[it])){
-
-//       int v = get_front(&queue_list[it]);
-
-//       if(g->indegree[v] == 0){
-//         flags[it][v] = false;
-//         queue_list[it].front++;
-//         // cout<<"Forward_Transpose indegree[v] == 0"<<endl;
-//         continue;
-//       }
-
-//       if(residue[it][v] / g->indegree[v] > residuemax){
-//         for(int j = 0; j < g->indegree[v]; j++){
-//           int u = g->inAdjList[v][j];
-//           residue[it][u] += (1-alpha) * residue[it][v] / g->indegree[v];
-
-//           if(g->indegree[u] == 0){
-//             // cout<<"Forward_Transpose indegree[u] == 0"<<endl;
-//             continue;
-//           }
-          
-//           if(residue[it][u] / g->indegree[u] > residuemax && !flags[it][u]){
-//             enqueue(&queue_list[it], u);
-//             flags[it][u] = true;
-//           }
-//         }
-//         pi[it][v] += alpha * residue[it][v];
-
-//         // int row_v = it / row_dim;
-//         int col_v = v / col_dim;
-//         // if(row_v == number_of_d_row_tree){
-//         //   row_v--;
-//         // }
-//         if(col_v == nParts){
-//           col_v--;
-//         }
-
-//         int inner_col_index = inner_group_mapping[v];
-
-//         // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-//         //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
-//         subset_tree->dense_mat_mapping[col_v](
-//           it, inner_col_index) += alpha * residue[it][v];
-
-//         residue[it][v] = 0;
-//       }
-      
-//       flags[it][v] = false;
-
-//       queue_list[it].front++;
-//     }
-
-//     queue_list[it].front = 0;
-//     queue_list[it].rear = 0;
-
-
-//   }
-
-//   return;
-
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// void DenseDirectedDynamicForwardPushTranspose_LP(int start, int end, Graph* g, double residuemax, double reservemin, 
-// double alpha, vector<int>& labeled_node_vec, 
-// double** residue, 
-// double** pi,
-// bool** flags, 
-// Queue* queue_list,
-// // int row_dim,
-// int col_dim,
-// // int number_of_d_row_tree,
-// int nParts,
-// vector<int> &inner_group_mapping,
-// d_row_tree_mkl* subset_tree
-// // vector<d_row_tree_mkl*> &d_row_tree_vec
-// )
-// {
-
-//   int vertices_number = g->n;  
-
-//   for(int it = start; it < end; it++){
-
-//     int src = labeled_node_vec[it];
-
-//     while(!isEmpty(&queue_list[it])){
-
-//       int v = get_front(&queue_list[it]);
-
-//       if(g->indegree[v] == 0){
-//         flags[it][v] = false;
-//         queue_list[it].front++;
-//         // cout<<"Forward_Transpose indegree[v] == 0"<<endl;
-//         continue;
-//       }
-
-//       // if(residue[it][v] / g->indegree[v] > residuemax){
-//       if(residue[it][v] > residuemax){
-//         for(int j = 0; j < g->indegree[v]; j++){
-//           int u = g->inAdjList[v][j];
-//           residue[it][u] += (1-alpha) * residue[it][v] / g->indegree[v];
-
-//           if(g->indegree[u] == 0){
-//             // cout<<"Forward_Transpose indegree[u] == 0"<<endl;
-//             continue;
-//           }
-          
-//           // if(residue[it][u] / g->indegree[u] > residuemax && !flags[it][u]){
-//           if(residue[it][u] > residuemax && !flags[it][u]){
-//             enqueue(&queue_list[it], u);
-//             flags[it][u] = true;
-//           }
-//         }
-//         pi[it][v] += alpha * residue[it][v];
-
-//         // int row_v = it / row_dim;
-//         int col_v = v / col_dim;
-//         // if(row_v == number_of_d_row_tree){
-//         //   row_v--;
-//         // }
-//         if(col_v == nParts){
-//           col_v--;
-//         }
-
-//         int inner_col_index = inner_group_mapping[v];
-
-//         // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-//         //   it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
-//         subset_tree->dense_mat_mapping[col_v](
-//           it, inner_col_index) += alpha * residue[it][v];
-
-//         residue[it][v] = 0;
-//       }
-      
-//       flags[it][v] = false;
-
-//       queue_list[it].front++;
-//     }
-
-//     queue_list[it].front = 0;
-//     queue_list[it].rear = 0;
-
-
-//   }
-
-//   return;
-
-// }
-
-
-
-
-
-
-
-
-
-
-// void DenseDirectedDynamicForwardPushTranspose_LP(int start, int end, Graph* g, double residuemax, double reservemin, 
-// double alpha, vector<int>& labeled_node_vec, 
-
-// float** residue, 
-// float** pi,
-// bool** flags, 
-// Queue* queue_list,
-
-// int row_dim,
-// int col_dim,
-// int number_of_d_row_tree,
-// int nParts,
-// vector<int> &inner_group_mapping,
-
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
-// vector<MatrixXd> & transpose_trMat_vec
-// )
-// {
-
-//   int vertices_number = g->n;  
-
-//   for(int it = start; it < end; it++){
-
-//     int src = labeled_node_vec[it];
-
-//     while(!isEmpty(&queue_list[it])){
-
-//       int v = get_front(&queue_list[it]);
-
-//       if(g->indegree[v] == 0){
-//         flags[it][v] = false;
-//         queue_list[it].front++;
-
-//         continue;
-//       }
-
-//       if(residue[it][v] / g->indegree[v] > residuemax){
-//         for(int j = 0; j < g->indegree[v]; j++){
-//           int u = g->inAdjList[v][j];
-//           residue[it][u] += (1-alpha) * residue[it][v] / g->indegree[v];
-
-//           if(g->indegree[u] == 0){
-//             continue;
-//           }
-          
-//           if(residue[it][u] / g->indegree[u] > residuemax && !flags[it][u]){
-
-//             enqueue(&queue_list[it], u);
-//             flags[it][u] = true;
-//           }
-//         }
-//         pi[it][v] += alpha * residue[it][v];
-
-//         int row_v = it / row_dim;
-//         int col_v = v / col_dim;
-//         if(row_v == number_of_d_row_tree){
-//           row_v--;
-//         }
-//         if(col_v == nParts){
-//           col_v--;
-//         }
-
-
-//         transpose_trMat_vec[row_v](v, it) += alpha * residue[it][v];
-
-//         int inner_col_index = inner_group_mapping[v];
-
-//         d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-//           it - row_v * row_dim, inner_col_index) += alpha * residue[it][v];
-
-//         residue[it][v] = 0;
-//       }
-      
-//       flags[it][v] = false;
-
-//       queue_list[it].front++;
-//     }
-
-
-//     queue_list[it].front = 0;
-//     queue_list[it].rear = 0;
-
-
-//   }
-
-
-//   return;
-
-// }
-
 
 
 
@@ -4357,20 +3683,14 @@ float** pi,
 bool** flags, 
 Queue* queue_list,
 
-// float** residue_transpose, 
-// float** pi_transpose,
-// bool** flags_transpose, 
-// Queue * queue_list_transpose,
-
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -4405,11 +3725,9 @@ int dynamic_ppr_start_iter
             }
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
@@ -4478,20 +3796,15 @@ float** pi,
 bool** flags, 
 Queue* queue_list,
 
-// float** residue_transpose, 
-// float** pi_transpose,
-// bool** flags_transpose, 
-// Queue * queue_list_transpose,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -4520,18 +3833,16 @@ int dynamic_ppr_start_iter
         for(int k = start; k < end; k++){
           if(j == 0){
             continue;
-            // if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
+
             if(residue[k][from_node] > residuemax && !flags[k][from_node]){
               enqueue(&queue_list[k], from_node);
               flags[k][from_node] = true;
             }
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
@@ -4545,12 +3856,12 @@ int dynamic_ppr_start_iter
 
           residue[k][from_node] -= pi[k][from_node] / (j+1) / alpha;
           residue[k][to_node] += (1 - alpha) * pi[k][from_node] / (j+1) / alpha;
-          // if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
+
           if(residue[k][from_node] > residuemax && !flags[k][from_node]){
             enqueue(&queue_list[k], from_node);
             flags[k][from_node] = true;
           }
-          // if(residue[k][to_node] / j > residuemax && !flags[k][to_node]){
+
           if(residue[k][to_node] > residuemax && !flags[k][to_node]){
             enqueue(&queue_list[k], to_node);
             flags[k][to_node] = true;
@@ -4583,20 +3894,16 @@ double** pi,
 bool** flags, 
 Queue* queue_list,
 
-// float** residue_transpose, 
-// float** pi_transpose,
-// bool** flags_transpose, 
-// Queue * queue_list_transpose,
 
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -4625,18 +3932,16 @@ int dynamic_ppr_start_iter
         for(int k = start; k < end; k++){
           if(j == 0){
             continue;
-            // if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
+
             if(residue[k][from_node] > residuemax && !flags[k][from_node]){
               enqueue(&queue_list[k], from_node);
               flags[k][from_node] = true;
             }
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
@@ -4650,12 +3955,12 @@ int dynamic_ppr_start_iter
 
           residue[k][from_node] -= pi[k][from_node] / (j+1) / alpha;
           residue[k][to_node] += (1 - alpha) * pi[k][from_node] / (j+1) / alpha;
-          // if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
+
           if(residue[k][from_node] > residuemax && !flags[k][from_node]){
             enqueue(&queue_list[k], from_node);
             flags[k][from_node] = true;
           }
-          // if(residue[k][to_node] / j > residuemax && !flags[k][to_node]){
+
           if(residue[k][to_node] > residuemax && !flags[k][to_node]){
             enqueue(&queue_list[k], to_node);
             flags[k][to_node] = true;
@@ -4704,15 +4009,15 @@ float** pi_transpose,
 bool** flags_transpose, 
 Queue * queue_list_transpose,
 
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -4754,11 +4059,9 @@ int dynamic_ppr_start_iter
 
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
@@ -4804,102 +4107,6 @@ int dynamic_ppr_start_iter
 
 
 
-// void DenseDirected_Refresh_PPR_initialization(int start, int end, Graph* g, double residuemax, double reservemin,
-// double alpha, vector<int>& labeled_node_vec, 
-
-// float** residue, 
-// float** pi,
-// bool** flags, 
-// Queue* queue_list,
-
-// // float** residue_transpose, 
-// // float** pi_transpose,
-// // bool** flags_transpose, 
-// // Queue * queue_list_transpose,
-
-// // int row_dim,
-// int col_dim,
-// // int number_of_d_row_tree,
-// int nParts,
-// vector<int> &inner_group_mapping,
-
-// int iter,
-// int vertex_number,
-// // vector<d_row_tree_mkl*> &d_row_tree_vec,
-// d_row_tree_mkl* subset_tree,
-// int dynamic_ppr_start_iter
-// ){
-
-//   if(iter < dynamic_ppr_start_iter){
-//     for(int i = start; i < end; i++){
-//       memset(residue[i], 0, sizeof(float) * vertex_number);
-//       memset(pi[i], 0, sizeof(float) * vertex_number);
-//       memset(flags[i], false, sizeof(bool) * vertex_number);
-//       queue_list[i].front = 0;
-//       queue_list[i].rear = 0;
-
-//       int src = labeled_node_vec[i];
-//       residue[i][src] = 1;
-//       flags[i][src] = true;
-//       enqueue(&queue_list[i], src);
-//     }
-//   }
-//   else{
-
-//     for(int i = 0; i < vertex_number; i++){
-//       int from_node = i;
-//       for(int j = g->former_outdegree[from_node]; j < g->outdegree[from_node]; j++){
-//         int to_node = g->outAdjList[from_node][j];
-        
-//         for(int k = start; k < end; k++){
-//           if(j == 0){
-//             continue;
-//             if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
-//               enqueue(&queue_list[k], from_node);
-//               flags[k][from_node] = true;
-//             }
-//           }
-
-//           // int row_v = k / row_dim;
-//           int col_v = from_node / col_dim;
-//           // if(row_v == number_of_d_row_tree){
-//           //   row_v--;
-//           // }
-//           if(col_v == nParts){
-//             col_v--;
-//           }
-
-//           int inner_col_index = inner_group_mapping[from_node];
-
-//           subset_tree->dense_mat_mapping[col_v](
-//             k , inner_col_index) += pi[k][from_node] * 1 / j;
-
-//           pi[k][from_node] *= (j + 1) / j;
-
-//           residue[k][from_node] -= pi[k][from_node] / (j+1) / alpha;
-//           residue[k][to_node] += (1 - alpha) * pi[k][from_node] / (j+1) / alpha;
-//           if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
-//             enqueue(&queue_list[k], from_node);
-//             flags[k][from_node] = true;
-//           }
-//           if(residue[k][to_node] / j > residuemax && !flags[k][to_node]){
-//             enqueue(&queue_list[k], to_node);
-//             flags[k][to_node] = true;
-//           }
-//         }
-
-//       }
-//     }
-//   }
-
-
-
-
-// }
-
-
-
-
 
 
 
@@ -4911,15 +4118,14 @@ float** pi_transpose,
 bool** flags_transpose, 
 Queue * queue_list_transpose,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -4954,7 +4160,7 @@ int dynamic_ppr_start_iter
 
           if(j == 0){
             continue;
-            // if(residue_transpose[k][from_node] / j > residuemax && !flags_transpose[k][from_node]){
+
             if(residue_transpose[k][from_node] > residuemax && !flags_transpose[k][from_node]){
               enqueue(&queue_list_transpose[k], from_node);
               flags_transpose[k][from_node] = true;
@@ -4962,11 +4168,9 @@ int dynamic_ppr_start_iter
 
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
@@ -4980,12 +4184,12 @@ int dynamic_ppr_start_iter
 
           residue_transpose[k][from_node] -= pi_transpose[k][from_node] / (j+1) / alpha;
           residue_transpose[k][to_node] += (1 - alpha) * pi_transpose[k][from_node] / (j+1) / alpha;
-          // if(residue_transpose[k][from_node] / j > residuemax && !flags_transpose[k][from_node]){
+
           if(residue_transpose[k][from_node] > residuemax && !flags_transpose[k][from_node]){
             enqueue(&queue_list_transpose[k], from_node);
             flags_transpose[k][from_node] = true;
           }
-          // if(residue_transpose[k][to_node] / j > residuemax && !flags_transpose[k][to_node]){
+
           if(residue_transpose[k][to_node] > residuemax && !flags_transpose[k][to_node]){
             enqueue(&queue_list_transpose[k], to_node);
             flags_transpose[k][to_node] = true;
@@ -5025,15 +4229,14 @@ double** pi_transpose,
 bool** flags_transpose, 
 Queue * queue_list_transpose,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -5068,7 +4271,7 @@ int dynamic_ppr_start_iter
 
           if(j == 0){
             continue;
-            // if(residue_transpose[k][from_node] / j > residuemax && !flags_transpose[k][from_node]){
+
             if(residue_transpose[k][from_node] > residuemax && !flags_transpose[k][from_node]){
               enqueue(&queue_list_transpose[k], from_node);
               flags_transpose[k][from_node] = true;
@@ -5076,11 +4279,9 @@ int dynamic_ppr_start_iter
 
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
@@ -5094,12 +4295,12 @@ int dynamic_ppr_start_iter
 
           residue_transpose[k][from_node] -= pi_transpose[k][from_node] / (j+1) / alpha;
           residue_transpose[k][to_node] += (1 - alpha) * pi_transpose[k][from_node] / (j+1) / alpha;
-          // if(residue_transpose[k][from_node] / j > residuemax && !flags_transpose[k][from_node]){
+
           if(residue_transpose[k][from_node] > residuemax && !flags_transpose[k][from_node]){
             enqueue(&queue_list_transpose[k], from_node);
             flags_transpose[k][from_node] = true;
           }
-          // if(residue_transpose[k][to_node] / j > residuemax && !flags_transpose[k][to_node]){
+
           if(residue_transpose[k][to_node] > residuemax && !flags_transpose[k][to_node]){
             enqueue(&queue_list_transpose[k], to_node);
             flags_transpose[k][to_node] = true;
@@ -5154,15 +4355,14 @@ double** pi_transpose,
 bool** flags_transpose, 
 Queue * queue_list_transpose,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -5197,11 +4397,9 @@ int dynamic_ppr_start_iter
             }
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
@@ -5264,11 +4462,10 @@ int dynamic_ppr_start_iter
 
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
+          
           if(col_v == nParts){
             col_v--;
           }
@@ -5308,480 +4505,6 @@ int dynamic_ppr_start_iter
 
 
 
-// void DenseDirected_Refresh_PPR_initialization_LP(int start, int end, Graph* g, double residuemax, double reservemin,
-// double alpha, vector<int>& labeled_node_vec, 
-
-// float** residue, 
-// float** pi,
-// bool** flags, 
-// Queue* queue_list,
-
-// float** residue_transpose, 
-// float** pi_transpose,
-// bool** flags_transpose, 
-// Queue * queue_list_transpose,
-
-// int row_dim,
-// int col_dim,
-// int number_of_d_row_tree,
-// int nParts,
-// vector<int> &inner_group_mapping,
-
-// int iter,
-// int vertex_number,
-
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
-// vector<MatrixXd> & transpose_trMat_vec,
-// int dynamic_ppr_start_iter
-// ){
-
-//   if(iter < dynamic_ppr_start_iter){
-//     for(int i = start; i < end; i++){
-//       memset(residue[i], 0, sizeof(float) * vertex_number);
-//       memset(pi[i], 0, sizeof(float) * vertex_number);
-//       memset(flags[i], false, sizeof(bool) * vertex_number);
-
-//       queue_list[i].front = 0;
-//       queue_list[i].rear = 0;
-
-//       int src = labeled_node_vec[i];
-//       residue[i][src] = 1;
-//       flags[i][src] = true;
-//       enqueue(&queue_list[i], src);
-//     }
-//   }
-//   else{
-
-//     for(int i = 0; i < vertex_number; i++){
-//       int from_node = i;
-//       for(int j = g->former_outdegree[from_node]; j < g->outdegree[from_node]; j++){
-//         int to_node = g->outAdjList[from_node][j];
-        
-//         for(int k = start; k < end; k++){
-//           if(j == 0){
-//             continue;
-//             if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
-//               enqueue(&queue_list[k], from_node);
-//               flags[k][from_node] = true;
-//             }
-            
-//           }
-
-//           int row_v = k / row_dim;
-//           int col_v = from_node / col_dim;
-//           if(row_v == number_of_d_row_tree){
-//             row_v--;
-//           }
-//           if(col_v == nParts){
-//             col_v--;
-//           }
-
-//           int inner_col_index = inner_group_mapping[from_node];
-
-//           d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-//             k - row_v * row_dim, inner_col_index) += pi[k][from_node] * 1 / j;
-
-//           transpose_trMat_vec[row_v](from_node, k) += pi[k][from_node] * 1 / j;
-
-//           pi[k][from_node] *= (j + 1) / j;
-
-//           residue[k][from_node] -= pi[k][from_node] / (j+1) / alpha;
-//           residue[k][to_node] += (1 - alpha) * pi[k][from_node] / (j+1) / alpha;
-//           if(residue[k][from_node] / j > residuemax && !flags[k][from_node]){
-//             enqueue(&queue_list[k], from_node);
-//             flags[k][from_node] = true;
-//           }
-//           if(residue[k][to_node] / j > residuemax && !flags[k][to_node]){
-//             enqueue(&queue_list[k], to_node);
-//             flags[k][to_node] = true;
-//           }
-//         }
-
-//       }
-//     }
-//   }
-
-
-//   if(iter < dynamic_ppr_start_iter){
-//     for(int i = start; i < end; i++){
-//       memset(residue_transpose[i], 0, sizeof(float) * vertex_number);
-//       memset(pi_transpose[i], 0, sizeof(float) * vertex_number);
-//       memset(flags_transpose[i], false, sizeof(bool) * vertex_number);
-    
-//       queue_list_transpose[i].front = 0;
-//       queue_list_transpose[i].rear = 0;
-
-//       int src = labeled_node_vec[i];
-//       residue_transpose[i][src] = 1;
-//       flags_transpose[i][src] = true;
-//       enqueue(&queue_list_transpose[i], src);
-//     }
-
-//   }
-//   else{
-//     for(int i = 0; i < vertex_number; i++){
-//       int from_node = i;
-//       for(int j = g->former_indegree[from_node]; j < g->indegree[from_node]; j++){
-//         int to_node = g->inAdjList[from_node][j];
-
-//         for(int k = start; k < end; k++){
-
-//           if(j == 0){
-//             continue;
-//             if(residue_transpose[k][from_node] / j > residuemax && !flags_transpose[k][from_node]){
-//               enqueue(&queue_list_transpose[k], from_node);
-//               flags_transpose[k][from_node] = true;
-//             }
-//           }
-
-//           int row_v = k / row_dim;
-//           int col_v = from_node / col_dim;
-//           if(row_v == number_of_d_row_tree){
-//             row_v--;
-//           }
-//           if(col_v == nParts){
-//             col_v--;
-//           }
-
-//           int inner_col_index = inner_group_mapping[from_node];
-
-//           d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-//             k - row_v * row_dim, inner_col_index) += pi_transpose[k][from_node] * 1 / j;
-
-//           transpose_trMat_vec[row_v](from_node, k) += pi_transpose[k][from_node] * 1 / j;
-
-//           pi_transpose[k][from_node] *= (j + 1) / j;
-
-//           residue_transpose[k][from_node] -= pi_transpose[k][from_node] / (j+1) / alpha;
-//           residue_transpose[k][to_node] += (1 - alpha) * pi_transpose[k][from_node] / (j+1) / alpha;
-//           if(residue_transpose[k][from_node] / j > residuemax && !flags_transpose[k][from_node]){
-//             enqueue(&queue_list_transpose[k], from_node);
-//             flags_transpose[k][from_node] = true;
-//           }
-//           if(residue_transpose[k][to_node] / j > residuemax && !flags_transpose[k][to_node]){
-//             enqueue(&queue_list_transpose[k], to_node);
-//             flags_transpose[k][to_node] = true;
-//           }
-//         }
-        
-//       }
-//     }
-//   }
-
-
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -5799,15 +4522,13 @@ MatrixXf &pi,
 bool** flags, 
 Queue* queue_list,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -5845,19 +4566,15 @@ int dynamic_ppr_start_iter
 
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
 
           int inner_col_index = inner_group_mapping[from_node];
-
-          // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-          //   k - row_v * row_dim, inner_col_index) += pi(k, from_node) * 1 / j;
+          
           subset_tree->dense_mat_mapping[col_v](
             k, inner_col_index) += pi(k, from_node) * 1 / j;
 
@@ -5910,15 +4627,14 @@ MatrixXf &pi,
 bool** flags, 
 Queue* queue_list,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -5949,7 +4665,6 @@ int dynamic_ppr_start_iter
           if(j == 0){
             continue;
 
-            // if(residue(k, from_node) / j > residuemax && !flags[k][from_node]){
             if(residue(k, from_node) > residuemax && !flags[k][from_node]){
               enqueue(&queue_list[k], from_node);
               flags[k][from_node] = true;
@@ -5957,19 +4672,16 @@ int dynamic_ppr_start_iter
 
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
 
           int inner_col_index = inner_group_mapping[from_node];
 
-          // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-          //   k - row_v * row_dim, inner_col_index) += pi(k, from_node) * 1 / j;
+
           subset_tree->dense_mat_mapping[col_v](
             k, inner_col_index) += pi(k, from_node) * 1 / j;
 
@@ -5977,12 +4689,12 @@ int dynamic_ppr_start_iter
 
           residue(k, from_node) -= pi(k, from_node) / (j+1) / alpha;
           residue(k, to_node) += (1 - alpha) * pi(k, from_node) / (j+1) / alpha;
-          // if(residue(k, from_node) / j > residuemax && !flags[k][from_node]){
+
           if(residue(k, from_node) > residuemax && !flags[k][from_node]){
             enqueue(&queue_list[k], from_node);
             flags[k][from_node] = true;
           }
-          // if(residue(k, to_node) / j > residuemax && !flags[k][to_node]){
+
           if(residue(k, to_node) > residuemax && !flags[k][to_node]){
             enqueue(&queue_list[k], to_node);
             flags[k][to_node] = true;
@@ -6032,15 +4744,14 @@ MatrixXf &pi_transpose,
 bool** flags_transpose, 
 Queue * queue_list_transpose,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -6078,19 +4789,16 @@ int dynamic_ppr_start_iter
 
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
 
           int inner_col_index = inner_group_mapping[from_node];
 
-          // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-          //   k - row_v * row_dim, inner_col_index) += pi_transpose(k, from_node) * 1 / j;
+
           subset_tree->dense_mat_mapping[col_v](
             k, inner_col_index) += pi_transpose(k, from_node) * 1 / j;
 
@@ -6159,15 +4867,14 @@ MatrixXf &pi_transpose,
 bool** flags_transpose, 
 Queue * queue_list_transpose,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
 int iter,
 int vertex_number,
-// vector<d_row_tree_mkl*> &d_row_tree_vec,
+
 d_row_tree_mkl* subset_tree,
 int dynamic_ppr_start_iter
 ){
@@ -6198,7 +4905,7 @@ int dynamic_ppr_start_iter
           if(j == 0){
             continue;
 
-            // if(residue_transpose(k, from_node) / j > residuemax && !flags_transpose[k][from_node]){
+
             if(residue_transpose(k, from_node) > residuemax && !flags_transpose[k][from_node]){
               enqueue(&queue_list_transpose[k], from_node);
               flags_transpose[k][from_node] = true;
@@ -6206,19 +4913,16 @@ int dynamic_ppr_start_iter
 
           }
 
-          // int row_v = k / row_dim;
+
           int col_v = from_node / col_dim;
-          // if(row_v == number_of_d_row_tree){
-          //   row_v--;
-          // }
+          
           if(col_v == nParts){
             col_v--;
           }
 
           int inner_col_index = inner_group_mapping[from_node];
 
-          // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-          //   k - row_v * row_dim, inner_col_index) += pi_transpose(k, from_node) * 1 / j;
+
           subset_tree->dense_mat_mapping[col_v](
             k, inner_col_index) += pi_transpose(k, from_node) * 1 / j;
 
@@ -6226,12 +4930,12 @@ int dynamic_ppr_start_iter
 
           residue_transpose(k, from_node) -= pi_transpose(k, from_node) / (j+1) / alpha;
           residue_transpose(k, to_node) += (1 - alpha) * pi_transpose(k, from_node) / (j+1) / alpha;
-          // if(residue_transpose(k, from_node) / j > residuemax && !flags_transpose[k][from_node]){
+
           if(residue_transpose(k, from_node) > residuemax && !flags_transpose[k][from_node]){
             enqueue(&queue_list_transpose[k], from_node);
             flags_transpose[k][from_node] = true;
           }
-          // if(residue_transpose(k, to_node) / j > residuemax && !flags_transpose[k][to_node]){
+
           if(residue_transpose(k, to_node) > residuemax && !flags_transpose[k][to_node]){
             enqueue(&queue_list_transpose[k], to_node);
             flags_transpose[k][to_node] = true;
@@ -6292,13 +4996,11 @@ MatrixXf & pi,
 bool** flags, 
 Queue* queue_list,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
-// vector<d_row_tree_mkl*> &d_row_tree_vec
 d_row_tree_mkl* subset_tree
 )
 {
@@ -6316,7 +5018,7 @@ d_row_tree_mkl* subset_tree
       if(g->outdegree[v] == 0){
         flags[it][v] = false;
         queue_list[it].front++;
-        // cout<<"Forward_Matrix outdegree[v] == 0"<<endl;
+
         continue;
       }
 
@@ -6327,7 +5029,7 @@ d_row_tree_mkl* subset_tree
           residue(it, u) += (1-alpha) * residue(it, v) / g->outdegree[v];
 
           if(g->outdegree[u] == 0){
-            // cout<<"Forward_Matrix outdegree[u] == 0"<<endl;
+
             continue;
           }
           
@@ -6339,11 +5041,9 @@ d_row_tree_mkl* subset_tree
 
         pi(it, v) += alpha * residue(it, v);
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
@@ -6351,8 +5051,7 @@ d_row_tree_mkl* subset_tree
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue(it, v);
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue(it, v);
 
@@ -6405,13 +5104,12 @@ MatrixXf & pi,
 bool** flags, 
 Queue* queue_list,
 
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 
-// vector<d_row_tree_mkl*> &d_row_tree_vec
 d_row_tree_mkl* subset_tree
 )
 {
@@ -6429,11 +5127,11 @@ d_row_tree_mkl* subset_tree
       if(g->outdegree[v] == 0){
         flags[it][v] = false;
         queue_list[it].front++;
-        // cout<<"Forward_Matrix outdegree[v] == 0"<<endl;
+
         continue;
       }
 
-      // if(residue(it, v) / g->outdegree[v] > residuemax){
+
       if(residue(it, v) > residuemax){
         for(int j = 0; j < g->outdegree[v]; j++){
           int u = g->outAdjList[v][j];
@@ -6441,11 +5139,11 @@ d_row_tree_mkl* subset_tree
           residue(it, u) += (1-alpha) * residue(it, v) / g->outdegree[v];
 
           if(g->outdegree[u] == 0){
-            // cout<<"Forward_Matrix outdegree[u] == 0"<<endl;
+
             continue;
           }
           
-          // if(residue(it, u) / g->outdegree[u] > residuemax && !flags[it][u]){
+
           if(residue(it, u) > residuemax && !flags[it][u]){
             enqueue(&queue_list[it], u);
             flags[it][u] = true;
@@ -6454,11 +5152,9 @@ d_row_tree_mkl* subset_tree
 
         pi(it, v) += alpha * residue(it, v);
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
@@ -6466,8 +5162,7 @@ d_row_tree_mkl* subset_tree
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue(it, v);
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue(it, v);
 
@@ -6533,9 +5228,8 @@ MatrixXf &pi,
 bool** flags, 
 Queue* queue_list,
 
-// int row_dim,
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 d_row_tree_mkl* subset_tree
@@ -6576,19 +5270,16 @@ d_row_tree_mkl* subset_tree
         }
         pi(it, v) += alpha * residue(it, v);
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue(it, v);
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue(it, v);
 
@@ -6649,9 +5340,9 @@ MatrixXf &pi,
 bool** flags, 
 Queue* queue_list,
 
-// int row_dim,
+
 int col_dim,
-// int number_of_d_row_tree,
+
 int nParts,
 vector<int> &inner_group_mapping,
 d_row_tree_mkl* subset_tree
@@ -6675,7 +5366,7 @@ d_row_tree_mkl* subset_tree
         continue;
       }
 
-      // if(residue(it, v) / g->indegree[v] > residuemax){
+
       if(residue(it, v) > residuemax){
         for(int j = 0; j < g->indegree[v]; j++){
           int u = g->inAdjList[v][j];
@@ -6685,7 +5376,7 @@ d_row_tree_mkl* subset_tree
             continue;
           }
           
-          // if(residue(it, u) / g->indegree[u] > residuemax && !flags[it][u]){
+
           if(residue(it, u) > residuemax && !flags[it][u]){
             enqueue(&queue_list[it], u);
             flags[it][u] = true;
@@ -6693,19 +5384,16 @@ d_row_tree_mkl* subset_tree
         }
         pi(it, v) += alpha * residue(it, v);
 
-        // int row_v = it / row_dim;
+
         int col_v = v / col_dim;
-        // if(row_v == number_of_d_row_tree){
-        //   row_v--;
-        // }
+        
         if(col_v == nParts){
           col_v--;
         }
 
         int inner_col_index = inner_group_mapping[v];
 
-        // d_row_tree_vec[row_v]->dense_mat_mapping[col_v](
-        //   it - row_v * row_dim, inner_col_index) += alpha * residue(it, v);
+
         subset_tree->dense_mat_mapping[col_v](
           it, inner_col_index) += alpha * residue(it, v);
 

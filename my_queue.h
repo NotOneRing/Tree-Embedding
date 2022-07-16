@@ -6,16 +6,16 @@
 #include <assert.h>
 
 typedef struct my_queue {
-	//𝑄.𝑎𝑟𝑟 stores the elements
+	//stores the elements
 	int* arr;
 
-	//𝑄.𝑐𝑎𝑝𝑎𝑐𝑖𝑡𝑦 stores its maximum size(𝑄.𝑐𝑎𝑝𝑎𝑐𝑖𝑡𝑦 = 𝑄.𝑎𝑟𝑟.𝑙𝑒𝑛𝑔𝑡ℎ)
+	//stores its maximum size
 	int capacity;
 
-	//𝑄.𝑓𝑟𝑜𝑛𝑡 stores the front position
+	//stores the front position
 	int front;
 
-	//𝑄.𝑟𝑒𝑎𝑟 stores the rear position
+	//stores the rear position
 	int rear;
 }Queue;
 
