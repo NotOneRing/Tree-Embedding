@@ -500,7 +500,6 @@ long long int& all_count, double alpha, vector<int>& labeled_node_vec){
       int current = get_front(&record_Q);
       residue[current] = 0;
       flags[current] = false;
-      //顺带初始化pi
       pi[current] = 0;
       dequeue(&record_Q);
     }
