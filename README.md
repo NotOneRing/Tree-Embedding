@@ -15,7 +15,6 @@
 |[patent-d](https://github.com/zjlxgxz/DynamicPPE)|Yes|2,738,013|13,960,811|
 |[flickr-growth](http://konect.cc/networks/flickr-growth/)|Yes|2,302,925|33,140,017|
 |[youtube-u-growth](http://konect.cc/networks/youtube-u-growth/)|Yes|3,223,589|9,375,374|
-|[sx-stackoverflow](http://konect.cc/networks/sx-stackoverflow/)|Yes|2,601,977|63,497,050|
 
 
 
