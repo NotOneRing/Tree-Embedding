@@ -26,7 +26,7 @@ Note that directed graphs and undirected graphs should be processed separately.
 Datasets used in our paper should be placed in ./DY_Dataset for Node Classification task and ./DY_LP_Dataset for Link Prediction task, respectively.
 
 
-Please download the hashing library from "" and put this folder as ./emhash in this directory
+Please download the hashing library from "https://github.com/ktprime/emhash" and put this folder as ./emhash in this directory
 
 
 ## Compilations
@@ -324,6 +324,15 @@ cp DY_LP_Dataset/mag-authors/mag-authors-Pos_LP_Test.txt DY_LP_Dataset/mag-autho
 cp DY_LP_Dataset/mag-authors/mag-authors-Neg_LP_Test.txt DY_LP_Dataset/mag-authors_batch/mag-authors_batch-Neg_LP_Test.txt
 ```
 
+
+```
+cp DY_LP_Dataset/Twitter/Twitter-Pos_LP_Test.txt DY_LP_Dataset/Twitter_batch/Twitter_batch-Pos_LP_Test.txt 
+```
+
+
+```
+cp DY_LP_Dataset/Twitter/Twitter-Neg_LP_Test.txt DY_LP_Dataset/Twitter_batch/Twitter_batch-Neg_LP_Test.txt
+```
 
 
 
