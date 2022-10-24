@@ -6087,7 +6087,6 @@ class d_row_tree_mkl_sparse_dynamic{
 
     assert(pow(hierarchy_n, level_p - 1) == nParts);
 
-    //等比数列
     total_nodes = (pow(hierarchy_n, level_p) - 1) / (hierarchy_n - 1);
 
     tcout<<"total_nodes = "<<total_nodes<<endl;
