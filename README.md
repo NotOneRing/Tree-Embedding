@@ -15,6 +15,7 @@
 |[patent-d](https://github.com/zjlxgxz/DynamicPPE)|Yes|2,738,013|13,960,811|
 |[flickr-growth](http://konect.cc/networks/flickr-growth/)|Yes|2,302,925|33,140,017|
 |[youtube-u-growth](http://konect.cc/networks/youtube-u-growth/)|Yes|3,223,589|9,375,374|
+|[Twitter](https://law.di.unimi.it/webdata/twitter-2010/)|Yes|41,652,230|1,468,365,182|
 
 
 
@@ -24,6 +25,8 @@ Note that directed graphs and undirected graphs should be processed separately.
 
 Datasets used in our paper should be placed in ./DY_Dataset for Node Classification task and ./DY_LP_Dataset for Link Prediction task, respectively.
 
+
+Please download the hashing library from "" and put this folder as ./emhash in this directory
 
 
 ## Compilations
@@ -69,7 +72,7 @@ mkdir ./DY_Dataset/patent
 mkdir ./DY_LP_Dataset/mag-authors
 mkdir ./DY_LP_Dataset/youtube-u-growth
 mkdir ./DY_LP_Dataset/flickr-growth
-
+mkdir ./DY_LP_Dataset/Twitter
 
 mkdir ./SIGMOD2023
 ```
@@ -195,6 +198,9 @@ python process-LP-month-sep.py youtube-u-growth 3223590 > process-youtube-edges.
 cp ./DY_Dataset/Target/mag-authors.txt ./DY_LP_Dataset/Target/mag-authors.txt
 ```
 
+```
+./RANDOM_SAMPLE_POINTS_LP Twitter 3000 41652230
+```
 
 
 then put these generated subset nodes of concern into "DY_Dataset/Target/" for Node Classification task and "DY_LP_Dataset/Target/" for Link Prediction task. 
@@ -218,6 +224,9 @@ then put these generated subset nodes of concern into "DY_Dataset/Target/" for N
 ./GEN_SUBSET_LP_DATA_U mag-authors 0.3 5843822
 ```
 
+```
+./GEN_SUBSET_LP_DATA_D Twitter 0.3 41652230
+```
 
 
 
@@ -236,6 +245,7 @@ mkdir ./DY_Dataset/patent_batch
 mkdir ./DY_LP_Dataset/mag-authors_batch
 mkdir ./DY_LP_Dataset/youtube-u-growth_batch
 mkdir ./DY_LP_Dataset/flickr-growth_batch
+mkdir ./DY_LP_Dataset/Twitter_batch
 ```
 
 
@@ -269,6 +279,9 @@ mkdir ./DY_LP_Dataset/flickr-growth_batch
 ./SPLIT_EDGES_LP youtube-u-growth 8
 ```
 
+```
+./SPLIT_EDGES_LP Twitter 3
+```
 
 #### copy label files for batch update
 ```

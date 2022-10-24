@@ -10,6 +10,7 @@ nohup ./TREE_U_LP mag-authors DY_EB/ 0.5 12 0.00000001 64 64 8 5843822 100 100 0
 nohup ./TREE_D_LP flickr-growth DY_EB/ 0.5 12 0.0000001 64 64 8 2302926 100 100 0.3 > ./SIGMOD2023/all_LP_1e-7_flickr-growth_tree_result.txt
 
 
+nohup ./TREE_D_LP Twitter LP_EB/ 0.5 12 0.000001 64 64 8 41652230 200 200 0.3 > ./SIGMOD2023/all_LP_1e-6_Twitter_tree_result.txt
 
 
 
@@ -25,7 +26,6 @@ nohup python labelclassification_dynamic_top1_label.py mag-authors 0.300000_0_64
 
 nohup ./TREE_D_NC large-wiki DY_EB/ 0.5 12 0.00001 64 64 8 6216199 100 100 0.3 > ./SIGMOD2023/all_NC_1e-5_large-wiki_tree.txt
 nohup python labelclassification_dynamic.py large-wiki 0.300000_6_64_8_De_svd_d_Dppr_parallel_bound_nodegree > ./SIGMOD2023/all_NC_1e-5_large-wiki_tree_result.txt
-
 
 
 
@@ -47,6 +47,7 @@ nohup ./TREE_U_LP mag-authors_batch DY_EB/ 0.5 12 0.00000001 64 64 8 5843822 7 7
 
 nohup ./TREE_D_LP flickr-growth_batch DY_EB/ 0.5 12 0.0000001 64 64 8 2302926 3 3 0.65 > ./SIGMOD2023/1e-7-flickr-growth_batch_SNAP3_0.65_tree_result.txt
 
+nohup ./TREE_D_LP Twitter LP_EB/ 0.5 12 0.000001 64 64 8 41652230 3 3 0.65 > ./SIGMOD2023/1e-6-Twitter_batch_SNAP3_0.65_tree_result.txt
 
 
 # 0.6
@@ -65,6 +66,8 @@ nohup ./TREE_U_LP mag-authors_batch DY_EB/ 0.5 12 0.00000001 64 64 8 5843822 7 7
 
 nohup ./TREE_D_LP flickr-growth_batch DY_EB/ 0.5 12 0.0000001 64 64 8 2302926 3 3 0.6 > ./SIGMOD2023/1e-7-flickr-growth_batch_SNAP3_0.6_tree_result.txt
 
+nohup ./TREE_D_LP Twitter LP_EB/ 0.5 12 0.000001 64 64 8 41652230 3 3 0.6 > ./SIGMOD2023/1e-6-Twitter_batch_SNAP3_0.6_tree_result.txt
+
 
 # 0.55
 nohup ./TREE_D_NC large-wiki_batch DY_EB/ 0.5 12 0.00001 64 64 8 6216199 9 9 0.55 > ./SIGMOD2023/1e-5-large-wiki_batch_SNAP9_0.55_tree.txt
@@ -82,6 +85,7 @@ nohup ./TREE_U_LP mag-authors_batch DY_EB/ 0.5 12 0.00000001 64 64 8 5843822 7 7
 
 nohup ./TREE_D_LP flickr-growth_batch DY_EB/ 0.5 12 0.0000001 64 64 8 2302926 3 3 0.55 > ./SIGMOD2023/1e-7-flickr-growth_batch_SNAP3_0.55_tree_result.txt
 
+nohup ./TREE_D_LP Twitter LP_EB/ 0.5 12 0.000001 64 64 8 41652230 3 3 0.55 > ./SIGMOD2023/1e-6-Twitter_batch_SNAP3_0.55_tree_result.txt
 
 
 
