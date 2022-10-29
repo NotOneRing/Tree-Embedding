@@ -1449,9 +1449,8 @@ vector<int> &indicator
 
 
           if(g->degree[u] == 0){
-
-            pi[it][u] += alpha * residue[it][v];
-            residue[it][src] += (1-alpha) * residue[it][v];
+            pi[it][u] += alpha * residue[it][u];
+            residue[it][src] += (1-alpha) * residue[it][u];
             continue;
           }
           
